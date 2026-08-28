@@ -1,8 +1,9 @@
 # DSDeaths
 
 Community-maintained fork of [quidrex/DSDeaths](https://github.com/quidrex/DSDeaths).
-Version 1.1.0 adds verified Elden Ring App Ver. 1.17 support and a read-only
-address-finding utility for future game updates.
+Version 1.2.0-rc1 adds fail-closed Elden Ring signature resolution verified on
+App Ver. 1.16 and 1.17, a persistent run offset, and expanded read-only
+address-finding utilities for future game updates.
 
 ## Purpose
 

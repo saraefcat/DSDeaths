@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [1.2.0-rc1] - 2026-08-28
+
 - Added a persistent Elden Ring death-count offset for starting a new run at
   zero without changing the cumulative count stored by the game.
 - Added runtime controls to set the current count as the zero baseline, edit

@@ -1,6 +1,6 @@
 # Elden Ring 1.17 investigation record
 
-Status: address discovery and complete-restart validation passed; DSDeaths runtime validation pending.
+Status: Elden Ring 1.17 address discovery, complete-restart validation, and DSDeaths runtime validation passed.
 
 ## Known-good baseline
 
@@ -56,7 +56,21 @@ values are not accepted as evidence for 1.17.
 - Complete-restart death address: `0x00007FF46AE401F4`
 - Complete-restart expected/read: 33505 / 33505
 - Complete game restart validation: PASS (exit code 0)
-- DSDeaths runtime validation: pending
+- DSDeaths startup count: PASS (33505)
+- DSDeaths one-death increment: PASS (33505 -> 33506)
+- DSDeaths process/architecture detection: PASS (`eldenring`, 64-bit)
+- `DSDeaths.txt` validation: PASS
+- Grace no-change validation: PASS
+- Fast Travel no-change validation: PASS
+- Same-character reload validation: PASS
+- DSDeaths restart validation: PASS
+- Repeated death increment validation: PASS
+- Load/character-select screen behavior: count changes to 0 while no character is loaded
+- Alternate-character behavior: changes to that character's stored count; one death increments it by 1
+- DSDeaths runtime validation: PASS
+
+The alternate character's absolute baseline count was not recorded, so only
+the character switch and `N -> N + 1` behavior were verified for that character.
 
 The 1.17 RVA candidate is `0x4060` bytes above the 1.16 RVA. This is a
 plausibility observation only, not independent validation.

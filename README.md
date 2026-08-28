@@ -34,6 +34,25 @@ disabled.
 
 Just double click it. It writes the current death count into `DSDeaths.txt` in the current directory.
 
+## Elden Ring run offset
+
+Elden Ring stores one cumulative death count across New Game cycles. DSDeaths
+can subtract a persistent zero baseline so a new run starts at `0` without
+changing game memory.
+
+While Elden Ring is connected, use these console keys:
+
+- `Z`: use the current raw cumulative count as zero and enable the offset.
+- `E`: enter an exact non-negative zero-baseline value and enable the offset.
+- `O`: toggle the offset on or off without deleting its value.
+- `H`: show the controls and current offset status.
+
+The value and ON/OFF state are stored in `DSDeaths.settings.ini` next to the
+executable and survive application restarts. `DSDeaths.txt` remains a plain
+number. If the active character's raw count is below the saved baseline, the
+output is clamped to `0` and DSDeaths prints a warning; toggle the offset off or
+set a suitable baseline for that character.
+
 ## Maintenance utility
 
 `DSDeaths.AddressFinder` is a separate x64, read-only utility for locating and

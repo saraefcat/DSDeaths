@@ -1,5 +1,12 @@
 # Changelog
 
+## [Unreleased]
+
+- Added a persistent Elden Ring death-count offset for starting a new run at
+  zero without changing the cumulative count stored by the game.
+- Added runtime controls to set the current count as the zero baseline, edit
+  the baseline, toggle it on or off, and display its current state.
+
 ## [1.1.0] - 2026-08-28
 
 - Updated the Elden Ring pointer-storage RVA from `0x03D5DF38` to

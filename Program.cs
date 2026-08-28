@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -21,6 +22,7 @@ namespace DSDeaths {
     class Program {
         const int PROCESS_WM_READ = 0x0010;
         const int PROCESS_QUERY_INFORMATION = 0x0400;
+        static bool consoleInputUnavailable;
 
         [DllImport("kernel32.dll", SetLastError = true)]
         static extern IntPtr OpenProcess(uint dwDesiredAccess, bool bInheritHandle, int dwProcessId);
@@ -50,6 +52,121 @@ namespace DSDeaths {
                 return false;
             }
             return true;
+        }
+
+        static bool IsEldenRing(Game game) {
+            return game != null && game.name.Equals("eldenring", StringComparison.OrdinalIgnoreCase);
+        }
+
+        static void PrintEldenRingOffsetControls(EldenRingOffsetSettings settings, int rawValue, bool hasRawValue) {
+            Console.WriteLine();
+            Console.WriteLine("Elden Ring offset controls");
+            Console.WriteLine("  Z = set the current raw count as zero and enable the offset");
+            Console.WriteLine("  E = enter an exact zero-baseline value and enable the offset");
+            Console.WriteLine("  O = toggle the offset ON/OFF");
+            Console.WriteLine("  H = show controls and current status");
+            Console.WriteLine();
+            PrintEldenRingOffsetStatus(settings, rawValue, hasRawValue);
+        }
+
+        static void PrintEldenRingOffsetStatus(EldenRingOffsetSettings settings, int rawValue, bool hasRawValue) {
+            string state = settings.Enabled ? "ON" : "OFF";
+            Console.WriteLine("Offset: " + state + " | zero baseline: " + settings.Offset.ToString(CultureInfo.InvariantCulture));
+
+            if (hasRawValue) {
+                Console.WriteLine(
+                    "Raw deaths: " + rawValue.ToString(CultureInfo.InvariantCulture) +
+                    " | output: " + settings.Apply(rawValue).ToString(CultureInfo.InvariantCulture));
+            } else {
+                Console.WriteLine("Raw deaths: not available yet");
+            }
+        }
+
+        static bool HandleEldenRingOffsetInput(
+            EldenRingOffsetSettings settings,
+            string settingsPath,
+            int rawValue,
+            bool hasRawValue) {
+            if (consoleInputUnavailable) {
+                return false;
+            }
+
+            bool changed = false;
+
+            while (true) {
+                ConsoleKeyInfo key;
+                try {
+                    if (!Console.KeyAvailable) {
+                        return changed;
+                    }
+                    key = Console.ReadKey(true);
+                } catch (InvalidOperationException) {
+                    consoleInputUnavailable = true;
+                    Console.WriteLine("Interactive offset controls are unavailable because console input is redirected.");
+                    return changed;
+                } catch (IOException) {
+                    consoleInputUnavailable = true;
+                    Console.WriteLine("Interactive offset controls are unavailable because console input could not be read.");
+                    return changed;
+                }
+
+                switch (key.Key) {
+                    case ConsoleKey.O:
+                        settings.Enabled = !settings.Enabled;
+                        SaveEldenRingOffsetSettings(settings, settingsPath);
+                        Console.WriteLine();
+                        Console.WriteLine("Elden Ring offset turned " + (settings.Enabled ? "ON." : "OFF."));
+                        PrintEldenRingOffsetStatus(settings, rawValue, hasRawValue);
+                        changed = true;
+                        break;
+
+                    case ConsoleKey.Z:
+                        if (!hasRawValue || rawValue < 0) {
+                            Console.WriteLine("A valid current raw death count is required before setting the zero baseline.");
+                            break;
+                        }
+
+                        settings.Offset = rawValue;
+                        settings.Enabled = true;
+                        SaveEldenRingOffsetSettings(settings, settingsPath);
+                        Console.WriteLine();
+                        Console.WriteLine("Zero baseline set from the current raw death count.");
+                        PrintEldenRingOffsetStatus(settings, rawValue, true);
+                        changed = true;
+                        break;
+
+                    case ConsoleKey.E:
+                        Console.WriteLine();
+                        Console.Write("New non-negative zero-baseline value: ");
+                        string input = Console.ReadLine();
+                        int newOffset;
+                        if (input == null ||
+                            !int.TryParse(input.Trim(), NumberStyles.None, CultureInfo.InvariantCulture, out newOffset) ||
+                            newOffset < 0) {
+                            Console.WriteLine("Offset was not changed. Enter a non-negative decimal Int32 value.");
+                            break;
+                        }
+
+                        settings.Offset = newOffset;
+                        settings.Enabled = true;
+                        SaveEldenRingOffsetSettings(settings, settingsPath);
+                        Console.WriteLine("Zero baseline updated and offset turned ON.");
+                        PrintEldenRingOffsetStatus(settings, rawValue, hasRawValue);
+                        changed = true;
+                        break;
+
+                    case ConsoleKey.H:
+                        PrintEldenRingOffsetControls(settings, rawValue, hasRawValue);
+                        break;
+                }
+            }
+        }
+
+        static void SaveEldenRingOffsetSettings(EldenRingOffsetSettings settings, string settingsPath) {
+            string error;
+            if (!settings.TrySave(settingsPath, out error)) {
+                Console.WriteLine("Could not save " + EldenRingOffsetSettings.FileName + ": " + error);
+            }
         }
 
         static bool PeekMemory(in IntPtr handle, in IntPtr baseAddress, bool isX64, in int[] offsets, ref int value) {
@@ -99,11 +216,23 @@ namespace DSDeaths {
             // put DSDeaths.txt in the same directory as the exe
             Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
 
+            string settingsPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, EldenRingOffsetSettings.FileName);
+            string settingsWarning;
+            EldenRingOffsetSettings eldenRingOffset = EldenRingOffsetSettings.Load(settingsPath, out settingsWarning);
+
             Console.WriteLine("-----------------------------------WARNING-----------------------------------");
             Console.WriteLine(" Does NOT work with Elden Ring if Easy Anti-Cheat (EAC) is running.");
             Console.WriteLine(" Possible risk of BANS by trying to use with EAC enabled.");
             Console.WriteLine(" USE AT YOUR OWN RISK.");
             Console.WriteLine("-----------------------------------WARNING-----------------------------------");
+            Console.WriteLine();
+
+            if (!string.IsNullOrEmpty(settingsWarning)) {
+                Console.WriteLine(settingsWarning);
+                Console.WriteLine();
+            }
+
+            PrintEldenRingOffsetStatus(eldenRingOffset, 0, false);
             Console.WriteLine();
 
             while (true) {
@@ -119,19 +248,50 @@ namespace DSDeaths {
 
                 IntPtr handle = OpenProcess(PROCESS_QUERY_INFORMATION | PROCESS_WM_READ, false, proc.Id);
                 IntPtr baseAddress = proc.MainModule.BaseAddress;
-                int oldValue = 0, value = 0;
+                int oldValue = int.MinValue, oldRawValue = int.MinValue, value = 0;
 
                 bool isWow64 = false;
                 if (IsWow64Process(handle, ref isWow64)) {
                     Console.WriteLine("Found " + (isWow64 ? "32" : "64") + " bit variant.");
                     int[] offsets = isWow64 ? game.offsets32 : game.offsets64;
+                    bool isEldenRing = IsEldenRing(game);
+
+                    if (isEldenRing) {
+                        PrintEldenRingOffsetControls(eldenRingOffset, value, false);
+                    }
 
                     while (!proc.HasExited) {
-                        if (PeekMemory(handle, baseAddress, !isWow64, offsets, ref value)) {
-                            if (value != oldValue) {
-                                oldValue = value;
-                                Write(value);
-                                Console.WriteLine("Deaths: " + value.ToString());
+                        bool hasRawValue = PeekMemory(handle, baseAddress, !isWow64, offsets, ref value);
+
+                        if (isEldenRing &&
+                            HandleEldenRingOffsetInput(eldenRingOffset, settingsPath, value, hasRawValue)) {
+                            oldValue = int.MinValue;
+                        }
+
+                        if (hasRawValue) {
+                            int outputValue = isEldenRing ? eldenRingOffset.Apply(value) : value;
+
+                            if (isEldenRing && eldenRingOffset.Enabled && value < eldenRingOffset.Offset &&
+                                value != oldRawValue) {
+                                Console.WriteLine(
+                                    "Raw deaths are below the zero baseline. " +
+                                    "The output is clamped to 0; no character may be loaded, or a different character may be active.");
+                            }
+
+                            oldRawValue = value;
+
+                            if (outputValue != oldValue) {
+                                oldValue = outputValue;
+                                Write(outputValue);
+
+                                if (isEldenRing && eldenRingOffset.Enabled) {
+                                    Console.WriteLine(
+                                        "Deaths: " + outputValue.ToString(CultureInfo.InvariantCulture) +
+                                        " (raw: " + value.ToString(CultureInfo.InvariantCulture) +
+                                        ", zero baseline: " + eldenRingOffset.Offset.ToString(CultureInfo.InvariantCulture) + ")");
+                                } else {
+                                    Console.WriteLine("Deaths: " + outputValue.ToString(CultureInfo.InvariantCulture));
+                                }
                             }
                         }
                         Thread.Sleep(500);

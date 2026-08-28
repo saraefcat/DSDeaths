@@ -77,3 +77,28 @@ plausibility observation only, not independent validation.
 
 An RVA must not be added to `Program.cs` until both Address Finder validation
 and complete-restart validation pass.
+
+## 1.17 signature research
+
+Address Finder commit `7cac6fc` scanned the complete executable module for the
+compact getter identified from all RIP-relative references to the validated
+pointer storage.
+
+- Known RVA: `0x03D61F98`
+- Expected/read: 33503 / 33503
+- Query failures: 0
+- Skipped chunks: 0
+- References to validated pointer storage: 735
+- Focused direct getter matches in the complete executable module: 1
+- Getter instruction RVA: `0x00256020`
+- Getter-resolved pointer storage: `0x00007FF69FB41F98`
+- Resolved target versus known pointer storage: MATCH
+- Focused pattern:
+  `48 8B 05 ?? ?? ?? ?? 48 85 C0 74 07 8B 80 94 00 00 00 C3 C3`
+- Report SHA-256:
+  `B0CF8DD080E63F0CB60A7CF464E2A9C35B4C608EE6282BD3F7E56B00E49279B8`
+
+The focused pattern is unique and resolves correctly in 1.17. Production use
+remains blocked until the same semantic getter is checked against 1.16 (or
+another independently validated game version) and the resolved pointer chain
+passes a complete-restart validation.

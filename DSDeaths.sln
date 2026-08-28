@@ -5,6 +5,8 @@ VisualStudioVersion = 16.0.29806.167
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DSDeaths", "DSDeaths.csproj", "{061903D9-B565-429A-B3A4-7A0E83FD22BB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DSDeaths.AddressFinder", "DSDeaths.AddressFinder\DSDeaths.AddressFinder.csproj", "{02A32830-478B-4A48-99E9-4A89A9D71FA2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -15,6 +17,10 @@ Global
 		{061903D9-B565-429A-B3A4-7A0E83FD22BB}.Debug|x64.Build.0 = Debug|x64
 		{061903D9-B565-429A-B3A4-7A0E83FD22BB}.Release|x64.ActiveCfg = Release|x64
 		{061903D9-B565-429A-B3A4-7A0E83FD22BB}.Release|x64.Build.0 = Release|x64
+		{02A32830-478B-4A48-99E9-4A89A9D71FA2}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{02A32830-478B-4A48-99E9-4A89A9D71FA2}.Debug|x64.Build.0 = Debug|Any CPU
+		{02A32830-478B-4A48-99E9-4A89A9D71FA2}.Release|x64.ActiveCfg = Release|Any CPU
+		{02A32830-478B-4A48-99E9-4A89A9D71FA2}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

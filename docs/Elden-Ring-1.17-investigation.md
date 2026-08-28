@@ -127,3 +127,23 @@ the wildcarded RIP-relative displacement differs. This evidence is sufficient
 to replace the Elden Ring fixed RVA with a fail-closed runtime signature
 resolver. A final real-game test of the resolver build remains required before
 merge or release.
+
+## Dynamic resolver real-game validation
+
+The runtime signature resolver build from commit `ae64f3e` was tested with
+Elden Ring 1.16 and 1.17, offline with EAC disabled.
+
+- Start Elden Ring 1.16, then start DSDeaths: PASS
+- 1.16 resolver output matches the expected getter RVA, pointer-storage RVA,
+  and field offset: PASS
+- 1.16 initial raw count: 33503
+- 1.16 one-death increment: PASS (33503 -> 33504)
+- Keep DSDeaths running, completely exit 1.16, then start 1.17: PASS
+- DSDeaths process-exit detection and automatic attachment to 1.17: PASS
+- 1.17 initial raw count after attachment: 33504
+- 1.17 one-death increment: PASS (33504 -> 33505)
+
+The same DSDeaths process successfully resolved and monitored both game
+versions across separate Elden Ring processes. Dynamic resolution and process
+reattachment are validated. Persistent offset controls still require their
+final real-game acceptance test before merge or release.

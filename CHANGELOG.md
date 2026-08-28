@@ -1,0 +1,23 @@
+# Changelog
+
+## [1.1.0] - 2026-08-28
+
+- Updated the Elden Ring pointer-storage RVA from `0x03D5DF38` to
+  `0x03D61F98` for App Ver. 1.17. The field offset remains `0x94`.
+- Added `DSDeaths.AddressFinder`, a separate x64 read-only maintenance utility
+  for exact count scanning, pointer discovery, and complete-restart RVA
+  validation.
+- Replaced the one-off `33504` launcher with a generic launcher that prompts
+  for any known non-negative cumulative death count.
+- Verified the Elden Ring counter after a complete game restart, repeated
+  deaths, grace interaction, fast travel, same-character reload, DSDeaths
+  restart, the no-character-loaded screen, and character switching.
+- Kept all other game definitions and the normal DSDeaths output behavior
+  unchanged.
+
+Elden Ring support must only be used offline with Easy Anti-Cheat disabled.
+
+## [1.0.0] - 2024-11-14
+
+- Last release from the upstream `quidrex/DSDeaths` repository before this
+  maintained fork.

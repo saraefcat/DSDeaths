@@ -71,6 +71,13 @@ regions of `eldenring.exe` for x64 RIP-relative instructions that resolve to
 the pointer-storage address. It writes `DSDeaths.SignatureResearch.txt` by
 default.
 
+The report also scans the complete executable module for the compact direct
+death-count getter shape observed in Elden Ring 1.17. The focused section
+reports every match, the pointer-storage address resolved by each match, and
+whether that address matches the validated target. A single focused match is
+useful evidence, but it still must be compared with another game version
+before it is used by DSDeaths at runtime.
+
 The same research must be run against at least two game versions with their
 independently validated RVAs. For the current investigation, use:
 

@@ -6,6 +6,8 @@
   zero without changing the cumulative count stored by the game.
 - Added runtime controls to set the current count as the zero baseline, edit
   the baseline, toggle it on or off, and display its current state.
+- Added Address Finder signature research that scans for a compact direct
+  death-count getter and reports every module-wide match and resolved target.
 
 ## [1.1.0] - 2026-08-28
 

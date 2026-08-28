@@ -481,6 +481,7 @@ internal static class Program
             reader,
             moduleRegions,
             pointerStorage,
+            fieldOffset,
             progress.Report,
             IsCancellationRequested);
         progress.Complete(result.ProcessedBytes, result.ExecutableBytes, result.Candidates.Count);
@@ -510,6 +511,7 @@ internal static class Program
             $"Query Failures    : {failedQueries}",
             $"Skipped Chunks    : {result.SkippedChunks}",
             $"References Found  : {result.Candidates.Count}",
+            $"Direct Getters    : {result.DirectDeathCountGetters.Count}",
             string.Empty
         };
 
@@ -523,6 +525,37 @@ internal static class Program
             }
             report.Add(string.Empty);
         }
+
+        report.Add("Focused direct death-count getters");
+        report.Add("==================================");
+        report.Add(string.Empty);
+
+        if (result.DirectDeathCountGetters.Count == 0)
+        {
+            report.Add("No direct getter matching the observed 1.17 instruction shape was found.");
+            report.Add(string.Empty);
+        }
+        else
+        {
+            for (int index = 0; index < result.DirectDeathCountGetters.Count; index++)
+            {
+                DirectDeathCountGetter getter = result.DirectDeathCountGetters[index];
+                ulong getterRva = checked(getter.InstructionAddress - moduleBase);
+
+                report.Add($"Direct Getter [{index}]");
+                report.Add($"Instruction RVA  : 0x{getterRva:X8}");
+                report.Add($"Instruction Addr : {FormatAddress(getter.InstructionAddress)}");
+                report.Add($"Pointer Storage  : {FormatAddress(getter.ResolvedPointerStorage)}");
+                report.Add($"Known Target     : {(getter.ResolvedPointerStorage == pointerStorage ? "MATCH" : "DIFFERENT")}");
+                report.Add($"Exact Bytes      : {getter.ExactBytes}");
+                report.Add($"Focused Pattern  : {getter.Pattern}");
+                report.Add(string.Empty);
+            }
+        }
+
+        report.Add("All references to the validated pointer storage");
+        report.Add("===============================================");
+        report.Add(string.Empty);
 
         for (int index = 0; index < result.Candidates.Count; index++)
         {
@@ -546,6 +579,7 @@ internal static class Program
         Console.WriteLine($"Executable regions : {result.ExecutableRegionCount}");
         Console.WriteLine($"Executable bytes   : {FormatBytes(result.ExecutableBytes)}");
         Console.WriteLine($"References found   : {result.Candidates.Count}");
+        Console.WriteLine($"Direct getters     : {result.DirectDeathCountGetters.Count}");
         Console.WriteLine($"Skipped chunks     : {result.SkippedChunks}");
 
         try

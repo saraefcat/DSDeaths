@@ -6,6 +6,7 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="..\DSDeaths.AddressFinder\DirectDeathCountGetterScanner.cs" Link="DirectDeathCountGetterScanner.cs" />
     <Compile Include="..\DSDeaths.AddressFinder\RipRelativeReferenceScanner.cs" Link="RipRelativeReferenceScanner.cs" />
   </ItemGroup>
 </Project>

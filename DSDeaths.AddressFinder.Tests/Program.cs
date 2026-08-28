@@ -15,6 +15,8 @@ internal static class AddressFinderTestsProgram
         TestAddressOverrideIsIgnored();
         TestPrefixLikePreviousByteDoesNotHideReference();
         TestSignatureWildcardsOnlyTargetDisplacement();
+        TestDirectDeathCountGetter();
+        TestDirectDeathCountGetterRejectsWrongOffset();
 
         if (_failures == 0)
         {
@@ -124,6 +126,59 @@ internal static class AddressFinderTestsProgram
 
         AssertEqual("prefix-like preceding byte does not hide a reference", 1, references.Count);
         AssertEqual("reference starts at the real REX byte", bufferAddress + 8, references[0].InstructionAddress);
+    }
+
+    private static void TestDirectDeathCountGetter()
+    {
+        const ulong bufferAddress = 0x0000000050000000;
+        const ulong targetAddress = 0x0000000050001000;
+        const int instructionIndex = 12;
+        var buffer = new byte[64];
+        Array.Fill(buffer, (byte)0x90);
+
+        buffer[instructionIndex] = 0x48;
+        buffer[instructionIndex + 1] = 0x8B;
+        buffer[instructionIndex + 2] = 0x05;
+        ulong nextInstruction = bufferAddress + instructionIndex + 7;
+        BinaryPrimitives.WriteInt32LittleEndian(
+            buffer.AsSpan(instructionIndex + 3, sizeof(int)),
+            checked((int)((long)targetAddress - (long)nextInstruction)));
+        new byte[]
+        {
+            0x48, 0x85, 0xC0, 0x74, 0x07,
+            0x8B, 0x80, 0x94, 0x00, 0x00, 0x00,
+            0xC3, 0xC3
+        }.CopyTo(buffer, instructionIndex + 7);
+
+        List<DirectDeathCountGetter> getters = DirectDeathCountGetterScanner.Find(
+            buffer,
+            bufferAddress,
+            0x94);
+
+        AssertEqual("direct death-count getter is detected", 1, getters.Count);
+        AssertEqual("direct getter resolves pointer storage", targetAddress, getters[0].ResolvedPointerStorage);
+        AssertEqual("focused signature has four wildcards", 4, CountWildcards(getters[0].Pattern));
+        AssertTrue(
+            "focused signature includes the field offset and returns",
+            getters[0].Pattern.EndsWith("8B 80 94 00 00 00 C3 C3", StringComparison.Ordinal));
+    }
+
+    private static void TestDirectDeathCountGetterRejectsWrongOffset()
+    {
+        var bytes = new byte[]
+        {
+            0x48, 0x8B, 0x05, 0x00, 0x00, 0x00, 0x00,
+            0x48, 0x85, 0xC0, 0x74, 0x07,
+            0x8B, 0x80, 0x98, 0x00, 0x00, 0x00,
+            0xC3, 0xC3
+        };
+
+        List<DirectDeathCountGetter> getters = DirectDeathCountGetterScanner.Find(
+            bytes,
+            0x0000000060000000,
+            0x94);
+
+        AssertEqual("direct getter rejects a different field offset", 0, getters.Count);
     }
 
     private static void WriteRipInstruction(

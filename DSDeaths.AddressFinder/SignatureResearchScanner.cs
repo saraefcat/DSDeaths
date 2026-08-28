@@ -12,6 +12,7 @@ internal sealed class SignatureResearchResult
 {
     internal SignatureResearchResult(
         List<SignatureResearchCandidate> candidates,
+        List<DirectDeathCountGetter> directDeathCountGetters,
         int executableRegionCount,
         ulong executableBytes,
         ulong processedBytes,
@@ -20,6 +21,7 @@ internal sealed class SignatureResearchResult
         bool cancelled)
     {
         Candidates = candidates;
+        DirectDeathCountGetters = directDeathCountGetters;
         ExecutableRegionCount = executableRegionCount;
         ExecutableBytes = executableBytes;
         ProcessedBytes = processedBytes;
@@ -29,6 +31,7 @@ internal sealed class SignatureResearchResult
     }
 
     internal List<SignatureResearchCandidate> Candidates { get; }
+    internal List<DirectDeathCountGetter> DirectDeathCountGetters { get; }
     internal int ExecutableRegionCount { get; }
     internal ulong ExecutableBytes { get; }
     internal ulong ProcessedBytes { get; }
@@ -46,6 +49,7 @@ internal static class SignatureResearchScanner
         ProcessMemoryReader reader,
         IReadOnlyList<MemoryRegion> moduleRegions,
         ulong pointerStorage,
+        int fieldOffset,
         Action<ScanProgress>? reportProgress,
         Func<bool> cancellationRequested)
     {
@@ -64,6 +68,7 @@ internal static class SignatureResearchScanner
         }
 
         var candidatesByAddress = new Dictionary<ulong, SignatureResearchCandidate>();
+        var gettersByAddress = new Dictionary<ulong, DirectDeathCountGetter>();
         var readErrors = new Dictionary<int, int>();
         ulong processedBytes = 0;
         int skippedChunks = 0;
@@ -77,6 +82,7 @@ internal static class SignatureResearchScanner
                 {
                     return CreateResult(
                         candidatesByAddress,
+                        gettersByAddress,
                         executableRegions.Count,
                         executableBytes,
                         processedBytes,
@@ -119,6 +125,23 @@ internal static class SignatureResearchScanner
                                 RipRelativeReferenceScanner.FormatInstructionBytes(buffer, readStart, reference),
                                 RipRelativeReferenceScanner.CreateSignatureWindow(buffer, readStart, reference)));
                     }
+
+                    List<DirectDeathCountGetter> getters = DirectDeathCountGetterScanner.Find(
+                        buffer,
+                        readStart,
+                        fieldOffset);
+
+                    foreach (DirectDeathCountGetter getter in getters)
+                    {
+                        if (getter.InstructionAddress < uniqueStart ||
+                            getter.InstructionAddress >= uniqueEnd ||
+                            gettersByAddress.ContainsKey(getter.InstructionAddress))
+                        {
+                            continue;
+                        }
+
+                        gettersByAddress.Add(getter.InstructionAddress, getter);
+                    }
                 }
                 else
                 {
@@ -135,6 +158,7 @@ internal static class SignatureResearchScanner
 
         return CreateResult(
             candidatesByAddress,
+            gettersByAddress,
             executableRegions.Count,
             executableBytes,
             processedBytes,
@@ -145,6 +169,7 @@ internal static class SignatureResearchScanner
 
     private static SignatureResearchResult CreateResult(
         Dictionary<ulong, SignatureResearchCandidate> candidatesByAddress,
+        Dictionary<ulong, DirectDeathCountGetter> gettersByAddress,
         int executableRegionCount,
         ulong executableBytes,
         ulong processedBytes,
@@ -161,8 +186,18 @@ internal static class SignatureResearchScanner
             candidates.Add(candidatesByAddress[address]);
         }
 
+        var getterAddresses = new List<ulong>(gettersByAddress.Keys);
+        getterAddresses.Sort();
+        var getters = new List<DirectDeathCountGetter>(getterAddresses.Count);
+
+        foreach (ulong address in getterAddresses)
+        {
+            getters.Add(gettersByAddress[address]);
+        }
+
         return new SignatureResearchResult(
             candidates,
+            getters,
             executableRegionCount,
             executableBytes,
             processedBytes,

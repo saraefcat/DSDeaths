@@ -145,5 +145,22 @@ Elden Ring 1.16 and 1.17, offline with EAC disabled.
 
 The same DSDeaths process successfully resolved and monitored both game
 versions across separate Elden Ring processes. Dynamic resolution and process
-reattachment are validated. Persistent offset controls still require their
-final real-game acceptance test before merge or release.
+reattachment are validated. At this point, persistent offset controls still
+required their final real-game acceptance test before merge or release.
+
+## Persistent offset real-game validation
+
+The persistent run-offset controls in the same `ae64f3e` runtime build passed
+their final Elden Ring 1.17 acceptance test.
+
+- Set the current raw count as zero with `Z`: PASS
+- Display and `DSDeaths.txt` change to 0: PASS
+- One-death increment with the offset enabled: PASS (0 -> 1)
+- Toggle the offset OFF with `O` and display the raw cumulative count: PASS
+- Toggle the offset ON again and restore the adjusted count: PASS
+- Restart DSDeaths and retain the saved baseline and enabled state: PASS
+- Resume from the same adjusted count after restart: PASS
+
+All requested dynamic-resolution and persistent-offset behavior has now passed
+unit, build, and real-game validation. The feature branch is ready for final
+review and release-candidate packaging; it has not yet been merged or released.

@@ -1,16 +1,16 @@
 @echo off
 setlocal
 cd /d "%~dp0"
-title DSDeaths Elden Ring 1.17 Address Finder
+title DSDeaths Elden Ring Address Finder
 
 echo ============================================================
 echo Use only with Easy Anti-Cheat disabled and the game offline.
-echo Load the character whose cumulative death count is 33504.
+echo Load a character and have its exact cumulative death count ready.
 echo ============================================================
 echo.
 pause
 
-DSDeaths.AddressFinder.exe --offline --known 33504
+DSDeaths.AddressFinder.exe --offline
 set "finder_exit=%ERRORLEVEL%"
 
 echo.

@@ -689,10 +689,11 @@ internal static class Program
     {
         PrintHeader();
         Console.WriteLine("Discovery:");
-        Console.WriteLine("  DSDeaths.AddressFinder.exe --offline --known 33504");
+        Console.WriteLine("  DSDeaths.AddressFinder.exe --offline");
+        Console.WriteLine("  DSDeaths.AddressFinder.exe --offline --known 123");
         Console.WriteLine();
         Console.WriteLine("Restart validation:");
-        Console.WriteLine("  DSDeaths.AddressFinder.exe --offline --validate-rva 0x12345678 --offset 0x94 --expected 33505");
+        Console.WriteLine("  DSDeaths.AddressFinder.exe --offline --validate-rva 0x12345678 --offset 0x94 --expected 124");
         Console.WriteLine();
         Console.WriteLine("Options:");
         Console.WriteLine("  --offline              Assert that EAC is disabled and the game is offline.");

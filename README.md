@@ -19,13 +19,19 @@ The death count is not reset when you enter NG+.
  * Sekiro: Shadows Die Twice
  * Elden Ring (offline, disable EAC)
 
- Note that only the current patch as of the time of release works. Please open a ticket if there is a new patch and it stops working.
+Most games still use patch-specific addresses. Elden Ring resolves its pointer
+storage from a validated code signature instead of a fixed RVA. If a future
+patch changes that signature, DSDeaths stops monitoring safely and reports the
+failure instead of guessing an address.
 
 ## Elden Ring support
 
 Elden Ring uses Easy Anti-Cheat to detect and deny trying to read from the process memory. Use your favorite search engine to find out how to disable EAC to play offline.
 
-The current Elden Ring address was verified on App Ver. 1.17.
+The Elden Ring signature was verified independently on App Ver. 1.16 and 1.17.
+At startup, DSDeaths scans executable game memory and accepts the signature
+only when exactly one match is found and it resolves inside `eldenring.exe`.
+No known-version RVA fallback is used.
 
 Use Elden Ring support only while the game is offline and Easy Anti-Cheat is
 disabled.

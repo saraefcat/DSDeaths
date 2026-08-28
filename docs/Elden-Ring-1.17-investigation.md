@@ -98,7 +98,32 @@ pointer storage.
 - Report SHA-256:
   `B0CF8DD080E63F0CB60A7CF464E2A9C35B4C608EE6282BD3F7E56B00E49279B8`
 
-The focused pattern is unique and resolves correctly in 1.17. Production use
-remains blocked until the same semantic getter is checked against 1.16 (or
-another independently validated game version) and the resolved pointer chain
-passes a complete-restart validation.
+The focused pattern is unique and resolves correctly in 1.17. At this stage,
+production use remained blocked until the same semantic getter was checked
+against 1.16 (or another independently validated game version).
+
+## 1.16 signature comparison
+
+The same Address Finder build and focused pattern were then run against the
+independently validated 1.16 pointer-storage RVA.
+
+- Module size: `0x5E01800`
+- Known RVA: `0x03D5DF38`
+- Expected/read: 33503 / 33503
+- Query failures: 0
+- Skipped chunks: 0
+- References to validated pointer storage: 732
+- Focused direct getter matches in the complete executable module: 1
+- Getter instruction RVA: `0x00256050`
+- Getter-resolved pointer storage: `0x00007FF6F3BBDF38`
+- Resolved target versus known pointer storage: MATCH
+- Focused pattern:
+  `48 8B 05 ?? ?? ?? ?? 48 85 C0 74 07 8B 80 94 00 00 00 C3 C3`
+- Report SHA-256:
+  `D3D0B831C97EB2EDA855B7493FF52D0DCB3789F4D94F79763B0614DE42DDED40`
+
+The pattern is therefore identical and unique in both tested versions. Only
+the wildcarded RIP-relative displacement differs. This evidence is sufficient
+to replace the Elden Ring fixed RVA with a fail-closed runtime signature
+resolver. A final real-game test of the resolver build remains required before
+merge or release.

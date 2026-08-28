@@ -15,6 +15,7 @@ internal static class NativeMethods
     internal const uint PageReadOnly = 0x02;
     internal const uint PageReadWrite = 0x04;
     internal const uint PageWriteCopy = 0x08;
+    internal const uint PageExecute = 0x10;
     internal const uint PageExecuteRead = 0x20;
     internal const uint PageExecuteReadWrite = 0x40;
     internal const uint PageExecuteWriteCopy = 0x80;

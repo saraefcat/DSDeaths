@@ -63,6 +63,26 @@ death count. Alternatively, omit `--expected` and enter the count when prompted.
 Absolute addresses may change. The RVA must remain the same and `RESULT` must be
 `MATCH`. Only then may the measured RVA and field offset be applied to DSDeaths.
 
+## Signature research
+
+`Analyze-RVA.cmd` is for researching a patch-independent signature. It first
+validates a known RVA and expected death count, then scans only executable
+regions of `eldenring.exe` for x64 RIP-relative instructions that resolve to
+the pointer-storage address. It writes `DSDeaths.SignatureResearch.txt` by
+default.
+
+The same research must be run against at least two game versions with their
+independently validated RVAs. For the current investigation, use:
+
+- Elden Ring 1.16: RVA `0x03D5DF38`
+- Elden Ring 1.17: RVA `0x03D61F98`
+
+Each candidate includes its instruction RVA, exact context bytes, and a pattern
+where only the target `disp32` is replaced by `??`. These are research outputs,
+not production signatures. Do not add a pattern to DSDeaths until it is unique
+in each tested module and resolves the validated pointer chain after a complete
+game restart.
+
 ## Output to retain
 
 Retain or paste these lines into the investigation record:
@@ -74,3 +94,4 @@ Retain or paste these lines into the investigation record:
 - pointer storage, calculated RVA, and field offset
 - DSDeaths-style validation result
 - complete-restart validation result
+- signature-research reports from each compared game version

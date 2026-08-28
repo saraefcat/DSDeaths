@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DSDeaths.AddressFinder", "D
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DSDeaths.OffsetTests", "DSDeaths.OffsetTests\DSDeaths.OffsetTests.csproj", "{7CE26E6C-1292-48B3-9B9D-986FF96A6613}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DSDeaths.AddressFinder.Tests", "DSDeaths.AddressFinder.Tests\DSDeaths.AddressFinder.Tests.csproj", "{B8524A2C-3158-47D4-845C-803ABBF6F189}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -27,6 +29,10 @@ Global
 		{7CE26E6C-1292-48B3-9B9D-986FF96A6613}.Debug|x64.Build.0 = Debug|Any CPU
 		{7CE26E6C-1292-48B3-9B9D-986FF96A6613}.Release|x64.ActiveCfg = Release|Any CPU
 		{7CE26E6C-1292-48B3-9B9D-986FF96A6613}.Release|x64.Build.0 = Release|Any CPU
+		{B8524A2C-3158-47D4-845C-803ABBF6F189}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{B8524A2C-3158-47D4-845C-803ABBF6F189}.Debug|x64.Build.0 = Debug|Any CPU
+		{B8524A2C-3158-47D4-845C-803ABBF6F189}.Release|x64.ActiveCfg = Release|Any CPU
+		{B8524A2C-3158-47D4-845C-803ABBF6F189}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

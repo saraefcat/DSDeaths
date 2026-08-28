@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 
 namespace DSDeaths.AddressFinder;
 
-internal readonly record struct MemoryRegion(ulong Start, ulong EndExclusive)
+internal readonly record struct MemoryRegion(ulong Start, ulong EndExclusive, uint Protection)
 {
     internal ulong Length => EndExclusive - Start;
 }
@@ -107,7 +107,7 @@ internal sealed class ProcessMemoryReader
                 IsReadable(information.Protect) &&
                 regionEnd > regionStart)
             {
-                regions.Add(new MemoryRegion(regionStart, regionEnd));
+                regions.Add(new MemoryRegion(regionStart, regionEnd, information.Protect));
             }
 
             current = regionEnd > current
@@ -237,6 +237,18 @@ internal sealed class ProcessMemoryReader
         return success && bytesRead == buffer.Length;
     }
 
+    internal bool TryReadBytes(ulong address, int length, out byte[] value, out int errorCode)
+    {
+        if (length < 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(length));
+        }
+
+        value = new byte[length];
+        bool success = TryRead(address, value, value.Length, out int bytesRead, out errorCode);
+        return success && bytesRead == value.Length;
+    }
+
     internal static List<MemoryRegion> ClipRegions(
         IReadOnlyList<MemoryRegion> regions,
         ulong rangeStart,
@@ -251,7 +263,7 @@ internal sealed class ProcessMemoryReader
             ulong end = Math.Min(region.EndExclusive, rangeEnd);
             if (end > start)
             {
-                clipped.Add(new MemoryRegion(start, end));
+                clipped.Add(new MemoryRegion(start, end, region.Protection));
             }
         }
 
@@ -267,6 +279,15 @@ internal sealed class ProcessMemoryReader
         }
 
         return total;
+    }
+
+    internal static bool IsExecutable(MemoryRegion region)
+    {
+        uint baseProtection = region.Protection & 0xFF;
+        return baseProtection == NativeMethods.PageExecute ||
+               baseProtection == NativeMethods.PageExecuteRead ||
+               baseProtection == NativeMethods.PageExecuteReadWrite ||
+               baseProtection == NativeMethods.PageExecuteWriteCopy;
     }
 
     private bool TryRead(

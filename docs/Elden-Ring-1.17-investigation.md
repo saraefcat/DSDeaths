@@ -164,3 +164,23 @@ their final Elden Ring 1.17 acceptance test.
 All requested dynamic-resolution and persistent-offset behavior has now passed
 unit, build, and real-game validation. The feature branch is ready for final
 review and release-candidate packaging; it has not yet been merged or released.
+
+## v1.2.0-rc1 extended soak test
+
+The packaged v1.2.0-rc1 build from commit `71f7bf2` was used for a full day on
+2026-08-29.
+
+- Saved zero baseline: 33503
+- Observed adjusted range: 19 -> 35
+- Corresponding raw range: 33522 -> 33538
+- Every displayed adjusted value remained equal to `raw - 33503`: PASS
+- Sequential death increments remained exactly +1: PASS
+- Character-unloaded/loading transitions produced raw 0 and safely clamped
+  output to 0 as designed: PASS
+- Returning to the character restored the prior adjusted count without drift
+  or baseline loss (including returns to 23 and 35): PASS
+- Repeated unloaded/loaded transitions remained stable: PASS
+
+No counter drift, lost increments, resolver failure, or offset persistence
+problem was observed during the extended run. The release candidate passed its
+final soak test and is ready for the user's merge decision.

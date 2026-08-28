@@ -21,6 +21,8 @@ The death count is not reset when you enter NG+.
 
 Elden Ring uses Easy Anti-Cheat to detect and deny trying to read from the process memory. Use your favorite search engine to find out how to disable EAC to play offline.
 
+The current Elden Ring address was verified on App Ver. 1.17.
+
 ## How do I use it?
 
 Just double click it. It writes the current death count into `DSDeaths.txt` in the current directory.

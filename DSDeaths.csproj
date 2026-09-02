@@ -65,6 +65,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="EldenRingSignature.cs" />
+    <Compile Include="EldenRingSignatureResolver.cs" />
+    <Compile Include="EldenRingOffsetSettings.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

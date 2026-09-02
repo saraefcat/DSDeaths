@@ -1,5 +1,19 @@
 # Changelog
 
+## [Unreleased]
+
+## [1.2.0-rc1] - 2026-08-28
+
+- Added a persistent Elden Ring death-count offset for starting a new run at
+  zero without changing the cumulative count stored by the game.
+- Added runtime controls to set the current count as the zero baseline, edit
+  the baseline, toggle it on or off, and display its current state.
+- Added Address Finder signature research that scans for a compact direct
+  death-count getter and reports every module-wide match and resolved target.
+- Replaced Elden Ring's fixed pointer-storage RVA with a read-only signature
+  resolver independently verified on App Ver. 1.16 and 1.17. Resolution fails
+  closed unless exactly one in-module match is found.
+
 ## [1.1.0] - 2026-08-28
 
 - Updated the Elden Ring pointer-storage RVA from `0x03D5DF38` to

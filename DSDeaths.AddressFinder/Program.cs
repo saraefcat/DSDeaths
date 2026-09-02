@@ -3,7 +3,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace DSDeaths.AddressFinder;
 
@@ -114,6 +116,11 @@ internal static class Program
 
         try
         {
+            if (options.AnalysisRva.HasValue)
+            {
+                return RunSignatureResearch(reader, moduleBase, moduleSize, options);
+            }
+
             return options.ValidationRva.HasValue
                 ? RunRestartValidation(reader, moduleBase, moduleSize, options)
                 : RunDiscovery(reader, moduleBase, moduleSize, options);
@@ -398,7 +405,7 @@ internal static class Program
             ? "VALIDATION PASSED"
             : $"VALIDATION PASSED FOR {validatedRvas.Count} RVA CANDIDATES");
         Console.WriteLine();
-        Console.WriteLine("Completely exit Elden Ring, start 1.17 again, load the same character, then run:");
+        Console.WriteLine("Completely exit Elden Ring, start it again, load the same character, then run:");
 
         foreach (ulong rva in validatedRvas)
         {
@@ -409,6 +416,193 @@ internal static class Program
         Console.WriteLine();
         Console.WriteLine("Do not update DSDeaths until one RVA passes after a complete game restart.");
         return 0;
+    }
+
+    private static int RunSignatureResearch(
+        ProcessMemoryReader reader,
+        ulong moduleBase,
+        ulong moduleSize,
+        Options options)
+    {
+        ulong rva = options.AnalysisRva!.Value;
+        int expected = options.ExpectedDeathCount ??
+                       options.KnownDeathCount ??
+                       PromptForNonNegativeInt32("Expected death count");
+        int fieldOffset = options.FieldOffset;
+
+        if (rva >= moduleSize)
+        {
+            Console.Error.WriteLine($"RVA 0x{rva:X} is outside the eldenring.exe module (size 0x{moduleSize:X}).");
+            return 3;
+        }
+
+        if (!TryReadDsDeathsChain(
+                reader,
+                moduleBase,
+                rva,
+                fieldOffset,
+                out ulong pointer,
+                out ulong fieldAddress,
+                out int readValue,
+                out int errorCode))
+        {
+            Console.Error.WriteLine($"Could not validate the supplied RVA: {DescribeWin32Error(errorCode)}");
+            return 3;
+        }
+
+        if (readValue != expected)
+        {
+            Console.Error.WriteLine($"The supplied RVA read {readValue}, not the expected count {expected}. Research aborted.");
+            return 3;
+        }
+
+        ulong pointerStorage = checked(moduleBase + rva);
+        Console.WriteLine("Signature Research");
+        Console.WriteLine("==================");
+        Console.WriteLine($"Known RVA       : 0x{rva:X8}");
+        Console.WriteLine($"Pointer Storage : {FormatAddress(pointerStorage)}");
+        Console.WriteLine($"Pointer         : {FormatAddress(pointer)}");
+        Console.WriteLine($"Field Offset    : 0x{fieldOffset:X}");
+        Console.WriteLine($"Death Address   : {FormatAddress(fieldAddress)}");
+        Console.WriteLine($"Expected / Read : {expected} / {readValue}");
+        Console.WriteLine();
+        Console.WriteLine("Enumerating executable eldenring.exe memory regions...");
+
+        List<MemoryRegion> readableRegions = reader.EnumerateReadableCommittedRegions(
+            IsCancellationRequested,
+            out int failedQueries);
+        List<MemoryRegion> moduleRegions = ProcessMemoryReader.ClipRegions(
+            readableRegions,
+            moduleBase,
+            moduleSize);
+
+        var progress = new ScanProgressPrinter("Executable scan");
+        SignatureResearchResult result = SignatureResearchScanner.Scan(
+            reader,
+            moduleRegions,
+            pointerStorage,
+            fieldOffset,
+            progress.Report,
+            IsCancellationRequested);
+        progress.Complete(result.ProcessedBytes, result.ExecutableBytes, result.Candidates.Count);
+
+        if (result.Cancelled)
+        {
+            Console.WriteLine("Signature research cancelled or eldenring.exe exited.");
+            return 130;
+        }
+
+        string reportPath = Path.GetFullPath(options.ReportPath ?? "DSDeaths.SignatureResearch.txt");
+        var report = new List<string>
+        {
+            "DSDeaths Elden Ring Signature Research",
+            "======================================",
+            string.Empty,
+            $"Module Base       : {FormatAddress(moduleBase)}",
+            $"Module Size       : 0x{moduleSize:X}",
+            $"Known RVA         : 0x{rva:X8}",
+            $"Pointer Storage   : {FormatAddress(pointerStorage)}",
+            $"Pointer           : {FormatAddress(pointer)}",
+            $"Field Offset      : 0x{fieldOffset:X}",
+            $"Death Address     : {FormatAddress(fieldAddress)}",
+            $"Expected / Read   : {expected} / {readValue}",
+            $"Executable Regions: {result.ExecutableRegionCount}",
+            $"Executable Bytes  : {FormatBytes(result.ExecutableBytes)}",
+            $"Query Failures    : {failedQueries}",
+            $"Skipped Chunks    : {result.SkippedChunks}",
+            $"References Found  : {result.Candidates.Count}",
+            $"Direct Getters    : {result.DirectDeathCountGetters.Count}",
+            string.Empty
+        };
+
+        if (result.ReadErrors.Count > 0)
+        {
+            var errors = new List<KeyValuePair<int, int>>(result.ReadErrors);
+            errors.Sort((left, right) => left.Key.CompareTo(right.Key));
+            foreach (KeyValuePair<int, int> pair in errors)
+            {
+                report.Add($"Read Error {pair.Key}: {pair.Value} chunk(s) - {DescribeWin32Error(pair.Key)}");
+            }
+            report.Add(string.Empty);
+        }
+
+        report.Add("Focused direct death-count getters");
+        report.Add("==================================");
+        report.Add(string.Empty);
+
+        if (result.DirectDeathCountGetters.Count == 0)
+        {
+            report.Add("No direct getter matching the observed 1.17 instruction shape was found.");
+            report.Add(string.Empty);
+        }
+        else
+        {
+            for (int index = 0; index < result.DirectDeathCountGetters.Count; index++)
+            {
+                DirectDeathCountGetter getter = result.DirectDeathCountGetters[index];
+                ulong getterRva = checked(getter.InstructionAddress - moduleBase);
+
+                report.Add($"Direct Getter [{index}]");
+                report.Add($"Instruction RVA  : 0x{getterRva:X8}");
+                report.Add($"Instruction Addr : {FormatAddress(getter.InstructionAddress)}");
+                report.Add($"Pointer Storage  : {FormatAddress(getter.ResolvedPointerStorage)}");
+                report.Add($"Known Target     : {(getter.ResolvedPointerStorage == pointerStorage ? "MATCH" : "DIFFERENT")}");
+                report.Add($"Exact Bytes      : {getter.ExactBytes}");
+                report.Add($"Focused Pattern  : {getter.Pattern}");
+                report.Add(string.Empty);
+            }
+        }
+
+        report.Add("All references to the validated pointer storage");
+        report.Add("===============================================");
+        report.Add(string.Empty);
+
+        for (int index = 0; index < result.Candidates.Count; index++)
+        {
+            SignatureResearchCandidate candidate = result.Candidates[index];
+            ulong instructionRva = checked(candidate.Reference.InstructionAddress - moduleBase);
+            ulong signatureRva = checked(candidate.Window.StartAddress - moduleBase);
+
+            report.Add($"Candidate [{index}]");
+            report.Add($"Instruction RVA  : 0x{instructionRva:X8}");
+            report.Add($"Instruction Addr : {FormatAddress(candidate.Reference.InstructionAddress)}");
+            report.Add($"Kind             : {candidate.Reference.Kind}");
+            report.Add($"Instruction      : {candidate.InstructionBytes}");
+            report.Add($"Signature RVA    : 0x{signatureRva:X8}");
+            report.Add($"Exact Context    : {candidate.Window.ExactBytes}");
+            report.Add($"Pattern Candidate: {candidate.Window.Pattern}");
+            report.Add(string.Empty);
+        }
+
+        report.Add("RESEARCH ONLY: compare candidates across game versions before using any pattern in DSDeaths.");
+
+        Console.WriteLine($"Executable regions : {result.ExecutableRegionCount}");
+        Console.WriteLine($"Executable bytes   : {FormatBytes(result.ExecutableBytes)}");
+        Console.WriteLine($"References found   : {result.Candidates.Count}");
+        Console.WriteLine($"Direct getters     : {result.DirectDeathCountGetters.Count}");
+        Console.WriteLine($"Skipped chunks     : {result.SkippedChunks}");
+
+        try
+        {
+            File.WriteAllLines(reportPath, report, new UTF8Encoding(encoderShouldEmitUTF8Identifier: false));
+        }
+        catch (IOException exception)
+        {
+            Console.Error.WriteLine($"Could not write signature report: {exception.Message}");
+            return 2;
+        }
+        catch (UnauthorizedAccessException exception)
+        {
+            Console.Error.WriteLine($"Could not write signature report: {exception.Message}");
+            return 2;
+        }
+
+        Console.WriteLine($"Report written     : {reportPath}");
+        Console.WriteLine();
+        Console.WriteLine("These are research candidates, not yet production signatures.");
+        Console.WriteLine("Collect reports from both Elden Ring 1.16 and 1.17 before implementing automatic resolution.");
+
+        return result.Candidates.Count > 0 ? 0 : 3;
     }
 
     private static int RunRestartValidation(
@@ -519,7 +713,7 @@ internal static class Program
         Process[] processes = Process.GetProcessesByName("eldenring");
         if (processes.Length == 0)
         {
-            Console.Error.WriteLine("eldenring.exe was not found. Start Elden Ring 1.17 offline with EAC disabled and load the character first.");
+            Console.Error.WriteLine("eldenring.exe was not found. Start Elden Ring offline with EAC disabled and load the character first.");
             return null;
         }
 
@@ -695,12 +889,17 @@ internal static class Program
         Console.WriteLine("Restart validation:");
         Console.WriteLine("  DSDeaths.AddressFinder.exe --offline --validate-rva 0x12345678 --offset 0x94 --expected 124");
         Console.WriteLine();
+        Console.WriteLine("Signature research:");
+        Console.WriteLine("  DSDeaths.AddressFinder.exe --offline --analyze-rva 0x12345678 --offset 0x94 --expected 124");
+        Console.WriteLine();
         Console.WriteLine("Options:");
         Console.WriteLine("  --offline              Assert that EAC is disabled and the game is offline.");
         Console.WriteLine("  --known <decimal>      Initial known cumulative death count.");
         Console.WriteLine("  --validate-rva <value> Validate one RVA instead of scanning.");
+        Console.WriteLine("  --analyze-rva <value>  Find executable RIP-relative references to a validated RVA.");
         Console.WriteLine($"  --offset <value>       Field offset; defaults to legacy 0x{LegacyFieldOffset:X}.");
-        Console.WriteLine("  --expected <decimal>   Expected count in validation mode.");
+        Console.WriteLine("  --expected <decimal>   Expected count in validation or research mode.");
+        Console.WriteLine("  --report <path>        Signature research report path.");
         Console.WriteLine("  --pid <decimal>        Select a specific eldenring.exe PID.");
         Console.WriteLine("  --help                 Show this help.");
         Console.WriteLine();
@@ -761,7 +960,12 @@ internal static class Program
 
         internal void Complete(ScanResult result)
         {
-            Report(new ScanProgress(result.ProcessedBytes, result.TotalBytes, result.Addresses.Count));
+            Complete(result.ProcessedBytes, result.TotalBytes, result.Addresses.Count);
+        }
+
+        internal void Complete(ulong processedBytes, ulong totalBytes, int candidateCount)
+        {
+            Report(new ScanProgress(processedBytes, totalBytes, candidateCount));
             Console.WriteLine();
         }
     }
@@ -772,9 +976,11 @@ internal static class Program
         internal bool OfflineConfirmed { get; private set; }
         internal int? KnownDeathCount { get; private set; }
         internal ulong? ValidationRva { get; private set; }
+        internal ulong? AnalysisRva { get; private set; }
         internal int FieldOffset { get; private set; } = LegacyFieldOffset;
         internal int? ExpectedDeathCount { get; private set; }
         internal int? ProcessId { get; private set; }
+        internal string? ReportPath { get; private set; }
 
         internal static Options Parse(string[] args)
         {
@@ -802,6 +1008,10 @@ internal static class Program
                         options.ValidationRva = ParseUnsigned(ReadValue(args, ref index, argument), argument);
                         break;
 
+                    case "--analyze-rva":
+                        options.AnalysisRva = ParseUnsigned(ReadValue(args, ref index, argument), argument);
+                        break;
+
                     case "--offset":
                         ulong offset = ParseUnsigned(ReadValue(args, ref index, argument), argument);
                         if (offset > int.MaxValue)
@@ -826,9 +1036,27 @@ internal static class Program
                         options.ProcessId = processId;
                         break;
 
+                    case "--report":
+                        options.ReportPath = ReadValue(args, ref index, argument);
+                        if (string.IsNullOrWhiteSpace(options.ReportPath))
+                        {
+                            throw new ArgumentException("--report requires a non-empty path.");
+                        }
+                        break;
+
                     default:
                         throw new ArgumentException($"Unknown option: {argument}");
                 }
+            }
+
+            if (options.ValidationRva.HasValue && options.AnalysisRva.HasValue)
+            {
+                throw new ArgumentException("--validate-rva and --analyze-rva cannot be used together.");
+            }
+
+            if (options.ReportPath is not null && !options.AnalysisRva.HasValue)
+            {
+                throw new ArgumentException("--report can only be used with --analyze-rva.");
             }
 
             return options;

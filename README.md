@@ -1,8 +1,9 @@
 # DSDeaths
 
 Community-maintained fork of [quidrex/DSDeaths](https://github.com/quidrex/DSDeaths).
-Version 1.1.0 adds verified Elden Ring App Ver. 1.17 support and a read-only
-address-finding utility for future game updates.
+Version 1.2.0-rc1 adds fail-closed Elden Ring signature resolution verified on
+App Ver. 1.16 and 1.17, a persistent run offset, and expanded read-only
+address-finding utilities for future game updates.
 
 ## Purpose
 
@@ -19,13 +20,19 @@ The death count is not reset when you enter NG+.
  * Sekiro: Shadows Die Twice
  * Elden Ring (offline, disable EAC)
 
- Note that only the current patch as of the time of release works. Please open a ticket if there is a new patch and it stops working.
+Most games still use patch-specific addresses. Elden Ring resolves its pointer
+storage from a validated code signature instead of a fixed RVA. If a future
+patch changes that signature, DSDeaths stops monitoring safely and reports the
+failure instead of guessing an address.
 
 ## Elden Ring support
 
 Elden Ring uses Easy Anti-Cheat to detect and deny trying to read from the process memory. Use your favorite search engine to find out how to disable EAC to play offline.
 
-The current Elden Ring address was verified on App Ver. 1.17.
+The Elden Ring signature was verified independently on App Ver. 1.16 and 1.17.
+At startup, DSDeaths scans executable game memory and accepts the signature
+only when exactly one match is found and it resolves inside `eldenring.exe`.
+No known-version RVA fallback is used.
 
 Use Elden Ring support only while the game is offline and Easy Anti-Cheat is
 disabled.
@@ -33,6 +40,25 @@ disabled.
 ## How do I use it?
 
 Just double click it. It writes the current death count into `DSDeaths.txt` in the current directory.
+
+## Elden Ring run offset
+
+Elden Ring stores one cumulative death count across New Game cycles. DSDeaths
+can subtract a persistent zero baseline so a new run starts at `0` without
+changing game memory.
+
+While Elden Ring is connected, use these console keys:
+
+- `Z`: use the current raw cumulative count as zero and enable the offset.
+- `E`: enter an exact non-negative zero-baseline value and enable the offset.
+- `O`: toggle the offset on or off without deleting its value.
+- `H`: show the controls and current offset status.
+
+The value and ON/OFF state are stored in `DSDeaths.settings.ini` next to the
+executable and survive application restarts. `DSDeaths.txt` remains a plain
+number. If the active character's raw count is below the saved baseline, the
+output is clamped to `0` and DSDeaths prints a warning; toggle the offset off or
+set a suitable baseline for that character.
 
 ## Maintenance utility
 

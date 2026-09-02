@@ -5,7 +5,7 @@ title DSDeaths Elden Ring RVA Restart Validation
 
 echo ============================================================
 echo Use only with Easy Anti-Cheat disabled and the game offline.
-echo Completely restart Elden Ring 1.17 before this validation.
+echo Completely restart Elden Ring before this validation.
 echo ============================================================
 echo.
 

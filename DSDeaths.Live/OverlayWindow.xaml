@@ -6,6 +6,11 @@
         WindowStyle="None" AllowsTransparency="True" Background="Transparent"
         ResizeMode="NoResize" ShowInTaskbar="False" Topmost="True"
         WindowStartupLocation="CenterScreen">
+    <Window.ContextMenu>
+        <ContextMenu>
+            <MenuItem x:Name="HideOverlayMenuItem" Click="HideOverlayMenuItem_Click" />
+        </ContextMenu>
+    </Window.ContextMenu>
     <Border Background="#B30A0D12" BorderBrush="#80D5A847" BorderThickness="1" CornerRadius="10" Padding="22">
         <Grid>
             <Grid.ColumnDefinitions>

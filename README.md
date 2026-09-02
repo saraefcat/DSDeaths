@@ -73,9 +73,9 @@ an additional application runtime installation. It provides:
 
 For the overlay, add a Window Capture source in OBS, select
 `DSDeaths Live Overlay`, and enable **Allow Transparency**. The overlay can be
-dragged to a convenient position and hidden with right-click. This is an early
-overlay implementation and should be verified with the intended OBS capture
-method before a public release.
+dragged to a convenient position. To hide it, right-click the overlay and
+choose **Hide OBS overlay**. This is an early overlay implementation and should
+be verified with the intended OBS capture method before a public release.
 
 GUI-only preferences are stored in `DSDeaths.Live.settings.ini`. The overlay
 and GUI do not change the plain-number format of `DSDeaths.txt`.

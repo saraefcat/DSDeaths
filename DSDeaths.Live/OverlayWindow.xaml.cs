@@ -8,7 +8,6 @@ namespace DSDeaths.Live {
         public OverlayWindow() {
             InitializeComponent();
             MouseLeftButtonDown += OverlayWindow_MouseLeftButtonDown;
-            MouseRightButtonDown += OverlayWindow_MouseRightButtonDown;
             ApplyLocalization();
         }
 
@@ -20,6 +19,7 @@ namespace DSDeaths.Live {
 
         public void ApplyLocalization() {
             OverlayDeathsLabel.Text = Localization.Get("DeathsLabel");
+            HideOverlayMenuItem.Header = Localization.Get("HideOverlay");
         }
 
         private void OverlayWindow_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) {
@@ -28,7 +28,7 @@ namespace DSDeaths.Live {
             }
         }
 
-        private void OverlayWindow_MouseRightButtonDown(object sender, MouseButtonEventArgs e) {
+        private void HideOverlayMenuItem_Click(object sender, RoutedEventArgs e) {
             EventHandler handler = HideRequested;
             if (handler != null) {
                 handler(this, EventArgs.Empty);

@@ -15,6 +15,7 @@ namespace DSDeaths.Live {
             OverlayFontFamily = "Segoe UI";
             OverlayFontSize = 58;
             OverlayScalePercent = 100;
+            OverlayTextShadow = "soft";
         }
 
         public string Language { get; set; }
@@ -25,6 +26,7 @@ namespace DSDeaths.Live {
         public string OverlayFontFamily { get; set; }
         public int OverlayFontSize { get; set; }
         public int OverlayScalePercent { get; set; }
+        public string OverlayTextShadow { get; set; }
 
         public static LiveSettings Load(string path, out string warning) {
             var settings = new LiveSettings();
@@ -108,6 +110,12 @@ namespace DSDeaths.Live {
                         } else {
                             warnings.Add("Ignored invalid OverlayScalePercent value: " + value);
                         }
+                    } else if (key.Equals("OverlayTextShadow", StringComparison.OrdinalIgnoreCase)) {
+                        if (IsTextShadow(value)) {
+                            settings.OverlayTextShadow = value.ToLowerInvariant();
+                        } else {
+                            warnings.Add("Ignored invalid OverlayTextShadow value: " + value);
+                        }
                     }
                 }
             } catch (IOException exception) {
@@ -132,7 +140,8 @@ namespace DSDeaths.Live {
                 "OverlayTextColor=" + OverlayTextColor,
                 "OverlayFontFamily=" + OverlayFontFamily,
                 "OverlayFontSize=" + OverlayFontSize.ToString(CultureInfo.InvariantCulture),
-                "OverlayScalePercent=" + OverlayScalePercent.ToString(CultureInfo.InvariantCulture)
+                "OverlayScalePercent=" + OverlayScalePercent.ToString(CultureInfo.InvariantCulture),
+                "OverlayTextShadow=" + OverlayTextShadow
             };
 
             try {
@@ -188,6 +197,12 @@ namespace DSDeaths.Live {
                 }
             }
             return true;
+        }
+
+        private static bool IsTextShadow(string value) {
+            return value.Equals("none", StringComparison.OrdinalIgnoreCase) ||
+                   value.Equals("soft", StringComparison.OrdinalIgnoreCase) ||
+                   value.Equals("strong", StringComparison.OrdinalIgnoreCase);
         }
     }
 }

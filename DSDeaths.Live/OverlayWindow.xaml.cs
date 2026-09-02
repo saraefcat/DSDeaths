@@ -3,6 +3,7 @@ using System.Globalization;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Effects;
 
 namespace DSDeaths.Live {
     public partial class OverlayWindow : Window {
@@ -31,6 +32,7 @@ namespace DSDeaths.Live {
             string textColor,
             string fontFamily,
             int fontSize,
+            string textShadow,
             int scalePercent) {
             int clampedOpacity = Math.Max(0, Math.Min(100, backgroundOpacity));
             byte alpha = (byte)Math.Round(clampedOpacity * 255.0 / 100.0);
@@ -41,6 +43,7 @@ namespace DSDeaths.Live {
             OverlayCountText.Foreground = new SolidColorBrush(foreground);
             OverlayCountText.FontFamily = new FontFamily(fontFamily);
             OverlayCountText.FontSize = Math.Max(24, Math.Min(96, fontSize));
+            OverlayCountText.Effect = CreateTextShadow(textShadow);
 
             int clampedScale = Math.Max(50, Math.Min(200, scalePercent));
             double scale = clampedScale / 100.0;
@@ -65,6 +68,24 @@ namespace DSDeaths.Live {
                 Left = Math.Max(workArea.Left, Math.Min(centerX - newWidth / 2.0, workArea.Right - newWidth));
                 Top = Math.Max(workArea.Top, Math.Min(centerY - newHeight / 2.0, workArea.Bottom - newHeight));
             }
+        }
+
+        private static DropShadowEffect CreateTextShadow(string textShadow) {
+            if (string.Equals(textShadow, "none", StringComparison.OrdinalIgnoreCase)) {
+                return null;
+            }
+
+            bool strong = string.Equals(textShadow, "strong", StringComparison.OrdinalIgnoreCase);
+            var effect = new DropShadowEffect {
+                Color = Colors.Black,
+                BlurRadius = strong ? 8 : 4,
+                Direction = 315,
+                Opacity = strong ? 0.95 : 0.75,
+                ShadowDepth = strong ? 2 : 1,
+                RenderingBias = RenderingBias.Quality
+            };
+            effect.Freeze();
+            return effect;
         }
 
         private void OverlayWindow_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) {

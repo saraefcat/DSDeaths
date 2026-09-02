@@ -32,6 +32,7 @@ internal static class Program {
         Check(settings.OverlayFontFamily == "Segoe UI", "overlay font defaults to Segoe UI");
         Check(settings.OverlayFontSize == 58, "overlay font size defaults to 58");
         Check(settings.OverlayScalePercent == 100, "overlay scale defaults to 100 percent");
+        Check(settings.OverlayTextShadow == "soft", "overlay text shadow defaults to soft");
         Check(warning == null, "missing settings file has no warning");
     }
 
@@ -49,7 +50,8 @@ internal static class Program {
                 OverlayTextColor = "#12ABEF",
                 OverlayFontFamily = "Meiryo",
                 OverlayFontSize = 72,
-                OverlayScalePercent = 135
+                OverlayScalePercent = 135,
+                OverlayTextShadow = "strong"
             };
             string error;
             Check(original.TrySave(path, out error), "GUI settings are saved");
@@ -65,6 +67,7 @@ internal static class Program {
             Check(restored.OverlayFontFamily == "Meiryo", "saved overlay font is restored");
             Check(restored.OverlayFontSize == 72, "saved overlay font size is restored");
             Check(restored.OverlayScalePercent == 135, "saved overlay scale is restored");
+            Check(restored.OverlayTextShadow == "strong", "saved overlay text shadow is restored");
             Check(warning == null, "valid GUI settings have no warning");
         } finally {
             Directory.Delete(directory, true);
@@ -82,7 +85,8 @@ internal static class Program {
                 "OverlayTextColor=rainbow",
                 "OverlayFontFamily=",
                 "OverlayFontSize=200",
-                "OverlayScalePercent=250"
+                "OverlayScalePercent=250",
+                "OverlayTextShadow=neon"
             });
 
             string warning;
@@ -95,6 +99,7 @@ internal static class Program {
             Check(settings.OverlayFontFamily == "Segoe UI", "invalid font keeps the default");
             Check(settings.OverlayFontSize == 58, "invalid font size keeps the default");
             Check(settings.OverlayScalePercent == 100, "invalid scale keeps the default");
+            Check(settings.OverlayTextShadow == "soft", "invalid text shadow keeps the default");
             Check(!string.IsNullOrEmpty(warning), "invalid GUI settings produce a warning");
         } finally {
             if (File.Exists(path)) {

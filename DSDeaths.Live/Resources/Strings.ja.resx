@@ -47,6 +47,10 @@
   <data name="FontFamily" xml:space="preserve"><value>カウントフォント</value></data>
   <data name="FontSize" xml:space="preserve"><value>文字サイズ</value></data>
   <data name="FontSizeValueFormat" xml:space="preserve"><value>{0}</value></data>
+  <data name="TextShadow" xml:space="preserve"><value>文字の影</value></data>
+  <data name="TextShadowNone" xml:space="preserve"><value>なし</value></data>
+  <data name="TextShadowSoft" xml:space="preserve"><value>弱い</value></data>
+  <data name="TextShadowStrong" xml:space="preserve"><value>強い</value></data>
   <data name="ShowOverlay" xml:space="preserve"><value>OBSオーバーレイを表示</value></data>
   <data name="HideOverlay" xml:space="preserve"><value>OBSオーバーレイを隠す</value></data>
   <data name="OverlayHint" xml:space="preserve"><value>ドラッグで移動・右クリックで非表示</value></data>

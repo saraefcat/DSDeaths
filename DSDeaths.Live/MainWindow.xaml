@@ -142,8 +142,15 @@
                                     <ColumnDefinition Width="18" />
                                     <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="10" />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="10" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
 
-                                <StackPanel Grid.Column="0">
+                                <StackPanel Grid.Row="0" Grid.Column="0">
                                     <Grid Margin="0,0,0,5">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*" />
@@ -154,7 +161,10 @@
                                     </Grid>
                                     <Slider x:Name="OverlayScaleSlider" Minimum="50" Maximum="200" TickFrequency="5"
                                             IsSnapToTickEnabled="False" ValueChanged="OverlayScaleSlider_ValueChanged" />
-                                    <Grid Margin="0,10,0,5">
+                                </StackPanel>
+
+                                <StackPanel Grid.Row="2" Grid.Column="0">
+                                    <Grid Margin="0,0,0,5">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*" />
                                             <ColumnDefinition Width="Auto" />
@@ -164,7 +174,10 @@
                                     </Grid>
                                     <Slider x:Name="OverlayOpacitySlider" Minimum="0" Maximum="100" TickFrequency="5"
                                             IsSnapToTickEnabled="False" ValueChanged="OverlayOpacitySlider_ValueChanged" />
-                                    <Grid Margin="0,10,0,5">
+                                </StackPanel>
+
+                                <StackPanel Grid.Row="4" Grid.Column="0">
+                                    <Grid Margin="0,0,0,5">
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="*" />
                                             <ColumnDefinition Width="Auto" />
@@ -176,11 +189,14 @@
                                             IsSnapToTickEnabled="False" ValueChanged="OverlayFontSizeSlider_ValueChanged" />
                                 </StackPanel>
 
-                                <StackPanel Grid.Column="2">
+                                <StackPanel Grid.Row="0" Grid.Column="2">
                                     <TextBlock x:Name="FontFamilyLabelText" Foreground="{StaticResource MutedBrush}" Margin="0,0,0,5" />
                                     <ComboBox x:Name="OverlayFontFamilyComboBox"
                                               SelectionChanged="OverlayFontFamilyComboBox_SelectionChanged" />
-                                    <TextBlock x:Name="TextColorLabelText" Foreground="{StaticResource MutedBrush}" Margin="0,10,0,5" />
+                                </StackPanel>
+
+                                <StackPanel Grid.Row="2" Grid.Column="2">
+                                    <TextBlock x:Name="TextColorLabelText" Foreground="{StaticResource MutedBrush}" Margin="0,0,0,5" />
                                     <Button x:Name="TextColorButton" Click="TextColorButton_Click" HorizontalAlignment="Stretch"
                                             Padding="8,5">
                                         <DockPanel>
@@ -189,6 +205,16 @@
                                             <TextBlock x:Name="TextColorValueText" VerticalAlignment="Center" />
                                         </DockPanel>
                                     </Button>
+                                </StackPanel>
+
+                                <StackPanel Grid.Row="4" Grid.Column="2">
+                                    <TextBlock x:Name="TextShadowLabelText" Foreground="{StaticResource MutedBrush}" Margin="0,0,0,5" />
+                                    <ComboBox x:Name="OverlayTextShadowComboBox"
+                                              SelectionChanged="OverlayTextShadowComboBox_SelectionChanged">
+                                        <ComboBoxItem Tag="none" />
+                                        <ComboBoxItem Tag="soft" />
+                                        <ComboBoxItem Tag="strong" />
+                                    </ComboBox>
                                 </StackPanel>
                             </Grid>
                         </StackPanel>

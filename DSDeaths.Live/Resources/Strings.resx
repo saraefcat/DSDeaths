@@ -47,6 +47,10 @@
   <data name="FontFamily" xml:space="preserve"><value>Counter font</value></data>
   <data name="FontSize" xml:space="preserve"><value>Counter font size</value></data>
   <data name="FontSizeValueFormat" xml:space="preserve"><value>{0}</value></data>
+  <data name="TextShadow" xml:space="preserve"><value>Text shadow</value></data>
+  <data name="TextShadowNone" xml:space="preserve"><value>None</value></data>
+  <data name="TextShadowSoft" xml:space="preserve"><value>Soft</value></data>
+  <data name="TextShadowStrong" xml:space="preserve"><value>Strong</value></data>
   <data name="ShowOverlay" xml:space="preserve"><value>Show OBS overlay</value></data>
   <data name="HideOverlay" xml:space="preserve"><value>Hide OBS overlay</value></data>
   <data name="OverlayHint" xml:space="preserve"><value>Drag to move · Right-click to hide</value></data>

@@ -2,6 +2,9 @@
 
 ## [Unreleased]
 
+- Added configurable counter-text shadows to the DSDeaths Live overlay, with
+  none, soft, and strong options.
+
 ## [1.2.0-rc1] - 2026-08-28
 
 - Added a persistent Elden Ring death-count offset for starting a new run at

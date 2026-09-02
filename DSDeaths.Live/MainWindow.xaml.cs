@@ -44,6 +44,7 @@ namespace DSDeaths.Live {
             CreateTrayIcon();
             SelectConfiguredLanguage();
             PopulateFontFamilies();
+            SelectOverlayTextShadow();
             SelectCloseButtonBehavior();
             OverlayScaleSlider.Value = settings.OverlayScalePercent;
             OverlayOpacitySlider.Value = settings.OverlayBackgroundOpacity;
@@ -189,6 +190,10 @@ namespace DSDeaths.Live {
             TextColorLabelText.Text = Localization.Get("TextColor");
             FontFamilyLabelText.Text = Localization.Get("FontFamily");
             FontSizeLabelText.Text = Localization.Get("FontSize");
+            TextShadowLabelText.Text = Localization.Get("TextShadow");
+            ((ComboBoxItem)OverlayTextShadowComboBox.Items[0]).Content = Localization.Get("TextShadowNone");
+            ((ComboBoxItem)OverlayTextShadowComboBox.Items[1]).Content = Localization.Get("TextShadowSoft");
+            ((ComboBoxItem)OverlayTextShadowComboBox.Items[2]).Content = Localization.Get("TextShadowStrong");
             ClampedWarningText.Text = Localization.Get("ClampedWarning");
 
             ((ComboBoxItem)LanguageComboBox.Items[0]).Content = Localization.Get("LanguageAuto");
@@ -308,6 +313,7 @@ namespace DSDeaths.Live {
                 settings.OverlayTextColor,
                 settings.OverlayFontFamily,
                 settings.OverlayFontSize,
+                settings.OverlayTextShadow,
                 settings.OverlayScalePercent);
             overlayWindow.UpdateDeathCount(
                 latestSnapshot != null && latestSnapshot.HasDeathCount ? latestSnapshot.DeathCount : 0);
@@ -443,6 +449,17 @@ namespace DSDeaths.Live {
             ScheduleSettingsSave();
         }
 
+        private void OverlayTextShadowComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e) {
+            if (initializing || OverlayTextShadowComboBox.SelectedItem == null) {
+                return;
+            }
+
+            var item = (ComboBoxItem)OverlayTextShadowComboBox.SelectedItem;
+            settings.OverlayTextShadow = item.Tag.ToString();
+            ApplyOverlayAppearance();
+            SaveSettings();
+        }
+
         private void ApplyOverlayAppearance() {
             OverlayScaleValueText.Text = Localization.Format(
                 "OverlayScaleValueFormat",
@@ -460,8 +477,22 @@ namespace DSDeaths.Live {
                     settings.OverlayTextColor,
                     settings.OverlayFontFamily,
                     settings.OverlayFontSize,
+                    settings.OverlayTextShadow,
                     settings.OverlayScalePercent);
             }
+        }
+
+        private void SelectOverlayTextShadow() {
+            foreach (ComboBoxItem item in OverlayTextShadowComboBox.Items) {
+                if (string.Equals(
+                        item.Tag.ToString(),
+                        settings.OverlayTextShadow,
+                        StringComparison.OrdinalIgnoreCase)) {
+                    OverlayTextShadowComboBox.SelectedItem = item;
+                    return;
+                }
+            }
+            OverlayTextShadowComboBox.SelectedIndex = 1;
         }
 
         private void PopulateFontFamilies() {

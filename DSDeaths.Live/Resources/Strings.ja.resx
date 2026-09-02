@@ -30,6 +30,7 @@
   <data name="ObsError" xml:space="preserve"><value>DSDeaths.txt に書き込めません</value></data>
   <data name="OutputPathLabel" xml:space="preserve"><value>ファイル: {0}</value></data>
   <data name="SettingsTitle" xml:space="preserve"><value>表示設定</value></data>
+  <data name="ApplicationSettingsTitle" xml:space="preserve"><value>アプリ設定</value></data>
   <data name="LanguageLabel" xml:space="preserve"><value>言語</value></data>
   <data name="LanguageAuto" xml:space="preserve"><value>Windowsの設定</value></data>
   <data name="LanguageJapanese" xml:space="preserve"><value>日本語</value></data>

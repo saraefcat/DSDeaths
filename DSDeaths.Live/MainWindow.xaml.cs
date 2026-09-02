@@ -173,6 +173,7 @@ namespace DSDeaths.Live {
             OffsetHelpText.Text = Localization.Get("OffsetHelp");
             ObsTitleText.Text = Localization.Get("ObsTitle");
             SettingsTitleText.Text = Localization.Get("SettingsTitle");
+            ApplicationSettingsTitleText.Text = Localization.Get("ApplicationSettingsTitle");
             LanguageLabelText.Text = Localization.Get("LanguageLabel");
             CloseButtonBehaviorLabelText.Text = Localization.Get("CloseButtonBehavior");
             ((ComboBoxItem)CloseButtonBehaviorComboBox.Items[0]).Content = Localization.Get("CloseToTray");

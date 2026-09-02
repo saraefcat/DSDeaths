@@ -35,6 +35,10 @@
   <data name="LanguageJapanese" xml:space="preserve"><value>日本語</value></data>
   <data name="LanguageEnglish" xml:space="preserve"><value>English</value></data>
   <data name="MinimizeToTray" xml:space="preserve"><value>閉じたときも通知領域で実行する</value></data>
+  <data name="OverlayAppearanceTitle" xml:space="preserve"><value>オーバーレイの外観</value></data>
+  <data name="BackgroundOpacity" xml:space="preserve"><value>背景の不透明度</value></data>
+  <data name="OpacityValueFormat" xml:space="preserve"><value>{0}%</value></data>
+  <data name="TextColor" xml:space="preserve"><value>カウント文字色</value></data>
   <data name="ShowOverlay" xml:space="preserve"><value>OBSオーバーレイを表示</value></data>
   <data name="HideOverlay" xml:space="preserve"><value>OBSオーバーレイを隠す</value></data>
   <data name="OverlayHint" xml:space="preserve"><value>ドラッグで移動・右クリックで非表示</value></data>

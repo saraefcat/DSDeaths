@@ -27,6 +27,8 @@ internal static class Program {
         Check(settings.Language == "auto", "default language is automatic");
         Check(settings.MinimizeToTray, "notification-area mode is enabled by default");
         Check(!settings.OverlayVisible, "overlay is hidden by default");
+        Check(settings.OverlayBackgroundOpacity == 70, "overlay background opacity defaults to 70 percent");
+        Check(settings.OverlayTextColor == "#FFFFFF", "overlay text defaults to white");
         Check(warning == null, "missing settings file has no warning");
     }
 
@@ -39,7 +41,9 @@ internal static class Program {
             var original = new LiveSettings {
                 Language = "ja",
                 MinimizeToTray = false,
-                OverlayVisible = true
+                OverlayVisible = true,
+                OverlayBackgroundOpacity = 35,
+                OverlayTextColor = "#12ABEF"
             };
             string error;
             Check(original.TrySave(path, out error), "GUI settings are saved");
@@ -50,6 +54,8 @@ internal static class Program {
             Check(restored.Language == "ja", "saved language is restored");
             Check(!restored.MinimizeToTray, "saved notification-area mode is restored");
             Check(restored.OverlayVisible, "saved overlay visibility is restored");
+            Check(restored.OverlayBackgroundOpacity == 35, "saved overlay opacity is restored");
+            Check(restored.OverlayTextColor == "#12ABEF", "saved overlay text color is restored");
             Check(warning == null, "valid GUI settings have no warning");
         } finally {
             Directory.Delete(directory, true);
@@ -62,7 +68,9 @@ internal static class Program {
             File.WriteAllLines(path, new[] {
                 "Language=xx",
                 "MinimizeToTray=perhaps",
-                "OverlayVisible=maybe"
+                "OverlayVisible=maybe",
+                "OverlayBackgroundOpacity=101",
+                "OverlayTextColor=rainbow"
             });
 
             string warning;
@@ -70,6 +78,8 @@ internal static class Program {
             Check(settings.Language == "auto", "invalid language keeps the default");
             Check(settings.MinimizeToTray, "invalid notification-area value keeps the default");
             Check(!settings.OverlayVisible, "invalid overlay value keeps the default");
+            Check(settings.OverlayBackgroundOpacity == 70, "invalid opacity keeps the default");
+            Check(settings.OverlayTextColor == "#FFFFFF", "invalid text color keeps the default");
             Check(!string.IsNullOrEmpty(warning), "invalid GUI settings produce a warning");
         } finally {
             if (File.Exists(path)) {

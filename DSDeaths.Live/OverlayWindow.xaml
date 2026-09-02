@@ -11,7 +11,8 @@
             <MenuItem x:Name="HideOverlayMenuItem" Click="HideOverlayMenuItem_Click" />
         </ContextMenu>
     </Window.ContextMenu>
-    <Border Background="#B30A0D12" BorderBrush="#80D5A847" BorderThickness="1" CornerRadius="10" Padding="22">
+    <Border x:Name="OverlayBackgroundBorder" Background="#B30A0D12" BorderBrush="#80D5A847"
+            BorderThickness="1" CornerRadius="10" Padding="22">
         <Grid>
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="Auto" />

@@ -78,7 +78,10 @@ choose **Hide OBS overlay**. This is an early overlay implementation and should
 be verified with the intended OBS capture method before a public release.
 
 GUI-only preferences are stored in `DSDeaths.Live.settings.ini`. The overlay
-and GUI do not change the plain-number format of `DSDeaths.txt`.
+and GUI do not change the plain-number format of `DSDeaths.txt`. The Display
+panel can adjust the overlay background opacity without fading the counter
+text, and can choose the counter text color with the Windows color picker.
+These choices are restored when DSDeaths Live starts again.
 
 ## Elden Ring run offset
 

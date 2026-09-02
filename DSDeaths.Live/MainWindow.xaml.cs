@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Threading;
 using Forms = System.Windows.Forms;
 
 namespace DSDeaths.Live {
@@ -12,6 +13,7 @@ namespace DSDeaths.Live {
         private readonly LiveSettings settings;
         private readonly string settingsPath;
         private readonly string startupWarning;
+        private readonly DispatcherTimer settingsSaveTimer;
         private Forms.NotifyIcon trayIcon;
         private Forms.ToolStripMenuItem trayShowItem;
         private Forms.ToolStripMenuItem trayExitItem;
@@ -32,9 +34,15 @@ namespace DSDeaths.Live {
             this.startupWarning = startupWarning;
 
             InitializeComponent();
+            settingsSaveTimer = new DispatcherTimer {
+                Interval = TimeSpan.FromMilliseconds(400)
+            };
+            settingsSaveTimer.Tick += SettingsSaveTimer_Tick;
             CreateTrayIcon();
             SelectConfiguredLanguage();
             MinimizeToTrayCheckBox.IsChecked = settings.MinimizeToTray;
+            OverlayOpacitySlider.Value = settings.OverlayBackgroundOpacity;
+            ApplyOverlayAppearance();
             ApplyLocalization();
             latestSnapshot = monitor.LatestSnapshot;
             ApplySnapshot(latestSnapshot);
@@ -164,6 +172,9 @@ namespace DSDeaths.Live {
             SettingsTitleText.Text = Localization.Get("SettingsTitle");
             LanguageLabelText.Text = Localization.Get("LanguageLabel");
             MinimizeToTrayCheckBox.Content = Localization.Get("MinimizeToTray");
+            OverlayAppearanceTitleText.Text = Localization.Get("OverlayAppearanceTitle");
+            BackgroundOpacityLabelText.Text = Localization.Get("BackgroundOpacity");
+            TextColorLabelText.Text = Localization.Get("TextColor");
             ClampedWarningText.Text = Localization.Get("ClampedWarning");
 
             ((ComboBoxItem)LanguageComboBox.Items[0]).Content = Localization.Get("LanguageAuto");
@@ -180,6 +191,7 @@ namespace DSDeaths.Live {
             }
 
             UpdateOverlayButtonText();
+            ApplyOverlayAppearance();
             if (latestSnapshot != null) {
                 ApplySnapshot(latestSnapshot);
             } else {
@@ -244,6 +256,9 @@ namespace DSDeaths.Live {
             }
 
             overlayWindow.ApplyLocalization();
+            overlayWindow.ApplyAppearance(
+                settings.OverlayBackgroundOpacity,
+                settings.OverlayTextColor);
             overlayWindow.UpdateDeathCount(
                 latestSnapshot != null && latestSnapshot.HasDeathCount ? latestSnapshot.DeathCount : 0);
             overlayWindow.Show();
@@ -289,6 +304,69 @@ namespace DSDeaths.Live {
                 return;
             }
             settings.MinimizeToTray = MinimizeToTrayCheckBox.IsChecked == true;
+            SaveSettings();
+        }
+
+        private void OverlayOpacitySlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {
+            if (initializing) {
+                return;
+            }
+
+            settings.OverlayBackgroundOpacity = (int)Math.Round(e.NewValue);
+            ApplyOverlayAppearance();
+            ScheduleSettingsSave();
+        }
+
+        private void TextColorButton_Click(object sender, RoutedEventArgs e) {
+            System.Drawing.Color initialColor;
+            try {
+                initialColor = System.Drawing.ColorTranslator.FromHtml(settings.OverlayTextColor);
+            } catch (Exception) {
+                initialColor = System.Drawing.Color.White;
+            }
+
+            using (var dialog = new Forms.ColorDialog {
+                Color = initialColor,
+                FullOpen = true,
+                AnyColor = true
+            }) {
+                if (dialog.ShowDialog() != Forms.DialogResult.OK) {
+                    return;
+                }
+
+                settings.OverlayTextColor = string.Format(
+                    CultureInfo.InvariantCulture,
+                    "#{0:X2}{1:X2}{2:X2}",
+                    dialog.Color.R,
+                    dialog.Color.G,
+                    dialog.Color.B);
+            }
+
+            ApplyOverlayAppearance();
+            SaveSettings();
+        }
+
+        private void ApplyOverlayAppearance() {
+            OpacityValueText.Text = Localization.Format(
+                "OpacityValueFormat",
+                settings.OverlayBackgroundOpacity);
+            TextColorValueText.Text = settings.OverlayTextColor;
+            TextColorSwatch.Background = BrushFromHex(settings.OverlayTextColor);
+
+            if (overlayWindow != null) {
+                overlayWindow.ApplyAppearance(
+                    settings.OverlayBackgroundOpacity,
+                    settings.OverlayTextColor);
+            }
+        }
+
+        private void ScheduleSettingsSave() {
+            settingsSaveTimer.Stop();
+            settingsSaveTimer.Start();
+        }
+
+        private void SettingsSaveTimer_Tick(object sender, EventArgs e) {
+            settingsSaveTimer.Stop();
             SaveSettings();
         }
 
@@ -351,6 +429,8 @@ namespace DSDeaths.Live {
 
         protected override void OnClosed(EventArgs e) {
             monitor.SnapshotChanged -= Monitor_SnapshotChanged;
+            settingsSaveTimer.Stop();
+            SaveSettings();
             if (overlayWindow != null) {
                 overlayWindow.Close();
                 overlayWindow = null;
@@ -364,6 +444,7 @@ namespace DSDeaths.Live {
         }
 
         private void SaveSettings() {
+            settingsSaveTimer.Stop();
             string error;
             if (!settings.TrySave(settingsPath, out error)) {
                 MonitorStatusText.Text = Localization.Format("SettingsSaveError", error);

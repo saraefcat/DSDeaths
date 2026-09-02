@@ -2,6 +2,7 @@ using System;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Media;
 
 namespace DSDeaths.Live {
     public partial class OverlayWindow : Window {
@@ -20,6 +21,16 @@ namespace DSDeaths.Live {
         public void ApplyLocalization() {
             OverlayDeathsLabel.Text = Localization.Get("DeathsLabel");
             HideOverlayMenuItem.Header = Localization.Get("HideOverlay");
+        }
+
+        public void ApplyAppearance(int backgroundOpacity, string textColor) {
+            int clampedOpacity = Math.Max(0, Math.Min(100, backgroundOpacity));
+            byte alpha = (byte)Math.Round(clampedOpacity * 255.0 / 100.0);
+            OverlayBackgroundBorder.Background = new SolidColorBrush(
+                Color.FromArgb(alpha, 0x0A, 0x0D, 0x12));
+
+            Color foreground = (Color)ColorConverter.ConvertFromString(textColor);
+            OverlayCountText.Foreground = new SolidColorBrush(foreground);
         }
 
         private void OverlayWindow_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) {

@@ -10,11 +10,15 @@ namespace DSDeaths.Live {
         public LiveSettings() {
             Language = "auto";
             MinimizeToTray = true;
+            OverlayBackgroundOpacity = 70;
+            OverlayTextColor = "#FFFFFF";
         }
 
         public string Language { get; set; }
         public bool MinimizeToTray { get; set; }
         public bool OverlayVisible { get; set; }
+        public int OverlayBackgroundOpacity { get; set; }
+        public string OverlayTextColor { get; set; }
 
         public static LiveSettings Load(string path, out string warning) {
             var settings = new LiveSettings();
@@ -62,6 +66,20 @@ namespace DSDeaths.Live {
                         } else {
                             warnings.Add("Ignored invalid OverlayVisible value: " + value);
                         }
+                    } else if (key.Equals("OverlayBackgroundOpacity", StringComparison.OrdinalIgnoreCase)) {
+                        int parsed;
+                        if (int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out parsed) &&
+                            parsed >= 0 && parsed <= 100) {
+                            settings.OverlayBackgroundOpacity = parsed;
+                        } else {
+                            warnings.Add("Ignored invalid OverlayBackgroundOpacity value: " + value);
+                        }
+                    } else if (key.Equals("OverlayTextColor", StringComparison.OrdinalIgnoreCase)) {
+                        if (IsHexColor(value)) {
+                            settings.OverlayTextColor = value.ToUpperInvariant();
+                        } else {
+                            warnings.Add("Ignored invalid OverlayTextColor value: " + value);
+                        }
                     }
                 }
             } catch (IOException exception) {
@@ -81,7 +99,9 @@ namespace DSDeaths.Live {
                 "# DSDeaths Live GUI settings. This file is updated by the application.",
                 "Language=" + Language,
                 "MinimizeToTray=" + MinimizeToTray.ToString(CultureInfo.InvariantCulture).ToLowerInvariant(),
-                "OverlayVisible=" + OverlayVisible.ToString(CultureInfo.InvariantCulture).ToLowerInvariant()
+                "OverlayVisible=" + OverlayVisible.ToString(CultureInfo.InvariantCulture).ToLowerInvariant(),
+                "OverlayBackgroundOpacity=" + OverlayBackgroundOpacity.ToString(CultureInfo.InvariantCulture),
+                "OverlayTextColor=" + OverlayTextColor
             };
 
             try {
@@ -120,6 +140,23 @@ namespace DSDeaths.Live {
             } catch (IOException) {
             } catch (UnauthorizedAccessException) {
             }
+        }
+
+        private static bool IsHexColor(string value) {
+            if (string.IsNullOrEmpty(value) || value.Length != 7 || value[0] != '#') {
+                return false;
+            }
+
+            for (int index = 1; index < value.Length; index++) {
+                char character = value[index];
+                bool isHexDigit = (character >= '0' && character <= '9') ||
+                                  (character >= 'a' && character <= 'f') ||
+                                  (character >= 'A' && character <= 'F');
+                if (!isHexDigit) {
+                    return false;
+                }
+            }
+            return true;
         }
     }
 }

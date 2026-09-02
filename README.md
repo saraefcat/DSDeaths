@@ -41,6 +41,10 @@ disabled.
 
 Just double click it. It writes the current death count into `DSDeaths.txt` in the current directory.
 
+Loading and character-selection screens may temporarily report `0`; DSDeaths
+writes that value to `DSDeaths.txt` and resumes the active character's count
+once it becomes available.
+
 ## Elden Ring run offset
 
 Elden Ring stores one cumulative death count across New Game cycles. DSDeaths

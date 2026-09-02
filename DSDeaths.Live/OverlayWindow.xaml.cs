@@ -23,7 +23,11 @@ namespace DSDeaths.Live {
             HideOverlayMenuItem.Header = Localization.Get("HideOverlay");
         }
 
-        public void ApplyAppearance(int backgroundOpacity, string textColor) {
+        public void ApplyAppearance(
+            int backgroundOpacity,
+            string textColor,
+            string fontFamily,
+            int fontSize) {
             int clampedOpacity = Math.Max(0, Math.Min(100, backgroundOpacity));
             byte alpha = (byte)Math.Round(clampedOpacity * 255.0 / 100.0);
             OverlayBackgroundBorder.Background = new SolidColorBrush(
@@ -31,6 +35,8 @@ namespace DSDeaths.Live {
 
             Color foreground = (Color)ColorConverter.ConvertFromString(textColor);
             OverlayCountText.Foreground = new SolidColorBrush(foreground);
+            OverlayCountText.FontFamily = new FontFamily(fontFamily);
+            OverlayCountText.FontSize = Math.Max(24, Math.Min(96, fontSize));
         }
 
         private void OverlayWindow_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) {

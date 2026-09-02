@@ -121,6 +121,47 @@
                     </Border>
 
                     <Button x:Name="OverlayButton" Click="OverlayButton_Click" HorizontalAlignment="Stretch" />
+
+                    <Border Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource PanelBorderBrush}"
+                            BorderThickness="1" CornerRadius="8" Padding="20" Margin="0,18,0,0">
+                        <StackPanel>
+                            <TextBlock x:Name="OverlayAppearanceTitleText" FontSize="17" FontWeight="SemiBold" />
+                            <Grid Margin="0,15,0,5">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock x:Name="BackgroundOpacityLabelText" Foreground="{StaticResource MutedBrush}" />
+                                <TextBlock x:Name="OpacityValueText" Grid.Column="1" Foreground="#E8EBEF" />
+                            </Grid>
+                            <Slider x:Name="OverlayOpacitySlider" Minimum="0" Maximum="100" TickFrequency="5"
+                                    IsSnapToTickEnabled="False" ValueChanged="OverlayOpacitySlider_ValueChanged" />
+
+                            <TextBlock x:Name="TextColorLabelText" Foreground="{StaticResource MutedBrush}" Margin="0,14,0,6" />
+                            <Button x:Name="TextColorButton" Click="TextColorButton_Click" HorizontalAlignment="Stretch">
+                                <DockPanel>
+                                    <Border x:Name="TextColorSwatch" DockPanel.Dock="Left" Width="22" Height="22"
+                                            CornerRadius="3" BorderBrush="#718096" BorderThickness="1" Margin="0,0,10,0" />
+                                    <TextBlock x:Name="TextColorValueText" VerticalAlignment="Center" />
+                                </DockPanel>
+                            </Button>
+
+                            <TextBlock x:Name="FontFamilyLabelText" Foreground="{StaticResource MutedBrush}" Margin="0,14,0,6" />
+                            <ComboBox x:Name="OverlayFontFamilyComboBox"
+                                      SelectionChanged="OverlayFontFamilyComboBox_SelectionChanged" />
+
+                            <Grid Margin="0,14,0,5">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="Auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock x:Name="FontSizeLabelText" Foreground="{StaticResource MutedBrush}" />
+                                <TextBlock x:Name="FontSizeValueText" Grid.Column="1" Foreground="#E8EBEF" />
+                            </Grid>
+                            <Slider x:Name="OverlayFontSizeSlider" Minimum="24" Maximum="96" TickFrequency="2"
+                                    IsSnapToTickEnabled="False" ValueChanged="OverlayFontSizeSlider_ValueChanged" />
+                        </StackPanel>
+                    </Border>
                 </StackPanel>
 
                 <StackPanel Grid.Column="1" Margin="10,0,0,0">
@@ -161,26 +202,6 @@
                                 <ComboBoxItem Tag="en" />
                             </ComboBox>
                             <CheckBox x:Name="MinimizeToTrayCheckBox" Click="MinimizeToTrayCheckBox_Click" Margin="0,17,0,0" />
-                            <Border BorderBrush="#303947" BorderThickness="0,1,0,0" Margin="0,18,0,15" />
-                            <TextBlock x:Name="OverlayAppearanceTitleText" FontSize="15" FontWeight="SemiBold" />
-                            <Grid Margin="0,13,0,5">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
-                                <TextBlock x:Name="BackgroundOpacityLabelText" Foreground="{StaticResource MutedBrush}" />
-                                <TextBlock x:Name="OpacityValueText" Grid.Column="1" Foreground="#E8EBEF" />
-                            </Grid>
-                            <Slider x:Name="OverlayOpacitySlider" Minimum="0" Maximum="100" TickFrequency="5"
-                                    IsSnapToTickEnabled="False" ValueChanged="OverlayOpacitySlider_ValueChanged" />
-                            <TextBlock x:Name="TextColorLabelText" Foreground="{StaticResource MutedBrush}" Margin="0,14,0,6" />
-                            <Button x:Name="TextColorButton" Click="TextColorButton_Click" HorizontalAlignment="Stretch">
-                                <DockPanel>
-                                    <Border x:Name="TextColorSwatch" DockPanel.Dock="Left" Width="22" Height="22"
-                                            CornerRadius="3" BorderBrush="#718096" BorderThickness="1" Margin="0,0,10,0" />
-                                    <TextBlock x:Name="TextColorValueText" VerticalAlignment="Center" />
-                                </DockPanel>
-                            </Button>
                         </StackPanel>
                     </Border>
                 </StackPanel>

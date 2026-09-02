@@ -12,6 +12,8 @@ namespace DSDeaths.Live {
             MinimizeToTray = true;
             OverlayBackgroundOpacity = 70;
             OverlayTextColor = "#FFFFFF";
+            OverlayFontFamily = "Segoe UI";
+            OverlayFontSize = 58;
         }
 
         public string Language { get; set; }
@@ -19,6 +21,8 @@ namespace DSDeaths.Live {
         public bool OverlayVisible { get; set; }
         public int OverlayBackgroundOpacity { get; set; }
         public string OverlayTextColor { get; set; }
+        public string OverlayFontFamily { get; set; }
+        public int OverlayFontSize { get; set; }
 
         public static LiveSettings Load(string path, out string warning) {
             var settings = new LiveSettings();
@@ -80,6 +84,20 @@ namespace DSDeaths.Live {
                         } else {
                             warnings.Add("Ignored invalid OverlayTextColor value: " + value);
                         }
+                    } else if (key.Equals("OverlayFontFamily", StringComparison.OrdinalIgnoreCase)) {
+                        if (!string.IsNullOrWhiteSpace(value) && value.Length <= 100) {
+                            settings.OverlayFontFamily = value;
+                        } else {
+                            warnings.Add("Ignored invalid OverlayFontFamily value: " + value);
+                        }
+                    } else if (key.Equals("OverlayFontSize", StringComparison.OrdinalIgnoreCase)) {
+                        int parsed;
+                        if (int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out parsed) &&
+                            parsed >= 24 && parsed <= 96) {
+                            settings.OverlayFontSize = parsed;
+                        } else {
+                            warnings.Add("Ignored invalid OverlayFontSize value: " + value);
+                        }
                     }
                 }
             } catch (IOException exception) {
@@ -101,7 +119,9 @@ namespace DSDeaths.Live {
                 "MinimizeToTray=" + MinimizeToTray.ToString(CultureInfo.InvariantCulture).ToLowerInvariant(),
                 "OverlayVisible=" + OverlayVisible.ToString(CultureInfo.InvariantCulture).ToLowerInvariant(),
                 "OverlayBackgroundOpacity=" + OverlayBackgroundOpacity.ToString(CultureInfo.InvariantCulture),
-                "OverlayTextColor=" + OverlayTextColor
+                "OverlayTextColor=" + OverlayTextColor,
+                "OverlayFontFamily=" + OverlayFontFamily,
+                "OverlayFontSize=" + OverlayFontSize.ToString(CultureInfo.InvariantCulture)
             };
 
             try {

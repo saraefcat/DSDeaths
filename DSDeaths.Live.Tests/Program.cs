@@ -29,6 +29,8 @@ internal static class Program {
         Check(!settings.OverlayVisible, "overlay is hidden by default");
         Check(settings.OverlayBackgroundOpacity == 70, "overlay background opacity defaults to 70 percent");
         Check(settings.OverlayTextColor == "#FFFFFF", "overlay text defaults to white");
+        Check(settings.OverlayFontFamily == "Segoe UI", "overlay font defaults to Segoe UI");
+        Check(settings.OverlayFontSize == 58, "overlay font size defaults to 58");
         Check(warning == null, "missing settings file has no warning");
     }
 
@@ -43,7 +45,9 @@ internal static class Program {
                 MinimizeToTray = false,
                 OverlayVisible = true,
                 OverlayBackgroundOpacity = 35,
-                OverlayTextColor = "#12ABEF"
+                OverlayTextColor = "#12ABEF",
+                OverlayFontFamily = "Meiryo",
+                OverlayFontSize = 72
             };
             string error;
             Check(original.TrySave(path, out error), "GUI settings are saved");
@@ -56,6 +60,8 @@ internal static class Program {
             Check(restored.OverlayVisible, "saved overlay visibility is restored");
             Check(restored.OverlayBackgroundOpacity == 35, "saved overlay opacity is restored");
             Check(restored.OverlayTextColor == "#12ABEF", "saved overlay text color is restored");
+            Check(restored.OverlayFontFamily == "Meiryo", "saved overlay font is restored");
+            Check(restored.OverlayFontSize == 72, "saved overlay font size is restored");
             Check(warning == null, "valid GUI settings have no warning");
         } finally {
             Directory.Delete(directory, true);
@@ -70,7 +76,9 @@ internal static class Program {
                 "MinimizeToTray=perhaps",
                 "OverlayVisible=maybe",
                 "OverlayBackgroundOpacity=101",
-                "OverlayTextColor=rainbow"
+                "OverlayTextColor=rainbow",
+                "OverlayFontFamily=",
+                "OverlayFontSize=200"
             });
 
             string warning;
@@ -80,6 +88,8 @@ internal static class Program {
             Check(!settings.OverlayVisible, "invalid overlay value keeps the default");
             Check(settings.OverlayBackgroundOpacity == 70, "invalid opacity keeps the default");
             Check(settings.OverlayTextColor == "#FFFFFF", "invalid text color keeps the default");
+            Check(settings.OverlayFontFamily == "Segoe UI", "invalid font keeps the default");
+            Check(settings.OverlayFontSize == 58, "invalid font size keeps the default");
             Check(!string.IsNullOrEmpty(warning), "invalid GUI settings produce a warning");
         } finally {
             if (File.Exists(path)) {

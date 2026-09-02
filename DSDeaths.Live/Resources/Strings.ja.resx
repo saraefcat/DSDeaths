@@ -39,6 +39,9 @@
   <data name="BackgroundOpacity" xml:space="preserve"><value>背景の不透明度</value></data>
   <data name="OpacityValueFormat" xml:space="preserve"><value>{0}%</value></data>
   <data name="TextColor" xml:space="preserve"><value>カウント文字色</value></data>
+  <data name="FontFamily" xml:space="preserve"><value>カウントフォント</value></data>
+  <data name="FontSize" xml:space="preserve"><value>文字サイズ</value></data>
+  <data name="FontSizeValueFormat" xml:space="preserve"><value>{0}</value></data>
   <data name="ShowOverlay" xml:space="preserve"><value>OBSオーバーレイを表示</value></data>
   <data name="HideOverlay" xml:space="preserve"><value>OBSオーバーレイを隠す</value></data>
   <data name="OverlayHint" xml:space="preserve"><value>ドラッグで移動・右クリックで非表示</value></data>

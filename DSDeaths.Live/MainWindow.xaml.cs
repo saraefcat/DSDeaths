@@ -1,6 +1,7 @@
 using System;
 using System.ComponentModel;
 using System.Globalization;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -40,8 +41,10 @@ namespace DSDeaths.Live {
             settingsSaveTimer.Tick += SettingsSaveTimer_Tick;
             CreateTrayIcon();
             SelectConfiguredLanguage();
+            PopulateFontFamilies();
             MinimizeToTrayCheckBox.IsChecked = settings.MinimizeToTray;
             OverlayOpacitySlider.Value = settings.OverlayBackgroundOpacity;
+            OverlayFontSizeSlider.Value = settings.OverlayFontSize;
             ApplyOverlayAppearance();
             ApplyLocalization();
             latestSnapshot = monitor.LatestSnapshot;
@@ -175,6 +178,8 @@ namespace DSDeaths.Live {
             OverlayAppearanceTitleText.Text = Localization.Get("OverlayAppearanceTitle");
             BackgroundOpacityLabelText.Text = Localization.Get("BackgroundOpacity");
             TextColorLabelText.Text = Localization.Get("TextColor");
+            FontFamilyLabelText.Text = Localization.Get("FontFamily");
+            FontSizeLabelText.Text = Localization.Get("FontSize");
             ClampedWarningText.Text = Localization.Get("ClampedWarning");
 
             ((ComboBoxItem)LanguageComboBox.Items[0]).Content = Localization.Get("LanguageAuto");
@@ -258,7 +263,9 @@ namespace DSDeaths.Live {
             overlayWindow.ApplyLocalization();
             overlayWindow.ApplyAppearance(
                 settings.OverlayBackgroundOpacity,
-                settings.OverlayTextColor);
+                settings.OverlayTextColor,
+                settings.OverlayFontFamily,
+                settings.OverlayFontSize);
             overlayWindow.UpdateDeathCount(
                 latestSnapshot != null && latestSnapshot.HasDeathCount ? latestSnapshot.DeathCount : 0);
             overlayWindow.Show();
@@ -346,18 +353,62 @@ namespace DSDeaths.Live {
             SaveSettings();
         }
 
+        private void OverlayFontFamilyComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e) {
+            if (initializing || OverlayFontFamilyComboBox.SelectedItem == null) {
+                return;
+            }
+
+            settings.OverlayFontFamily = OverlayFontFamilyComboBox.SelectedItem.ToString();
+            ApplyOverlayAppearance();
+            SaveSettings();
+        }
+
+        private void OverlayFontSizeSlider_ValueChanged(
+            object sender,
+            RoutedPropertyChangedEventArgs<double> e) {
+            if (initializing) {
+                return;
+            }
+
+            settings.OverlayFontSize = (int)Math.Round(e.NewValue);
+            ApplyOverlayAppearance();
+            ScheduleSettingsSave();
+        }
+
         private void ApplyOverlayAppearance() {
             OpacityValueText.Text = Localization.Format(
                 "OpacityValueFormat",
                 settings.OverlayBackgroundOpacity);
             TextColorValueText.Text = settings.OverlayTextColor;
             TextColorSwatch.Background = BrushFromHex(settings.OverlayTextColor);
+            FontSizeValueText.Text = Localization.Format("FontSizeValueFormat", settings.OverlayFontSize);
 
             if (overlayWindow != null) {
                 overlayWindow.ApplyAppearance(
                     settings.OverlayBackgroundOpacity,
-                    settings.OverlayTextColor);
+                    settings.OverlayTextColor,
+                    settings.OverlayFontFamily,
+                    settings.OverlayFontSize);
             }
+        }
+
+        private void PopulateFontFamilies() {
+            string[] fontNames = Fonts.SystemFontFamilies
+                .Select(font => font.Source)
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(name => name, StringComparer.CurrentCultureIgnoreCase)
+                .ToArray();
+
+            string selectedFont = fontNames.FirstOrDefault(name =>
+                string.Equals(name, settings.OverlayFontFamily, StringComparison.OrdinalIgnoreCase));
+            if (selectedFont == null) {
+                selectedFont = fontNames.FirstOrDefault(name =>
+                    string.Equals(name, "Segoe UI", StringComparison.OrdinalIgnoreCase)) ?? fontNames.First();
+                settings.OverlayFontFamily = selectedFont;
+            }
+
+            OverlayFontFamilyComboBox.ItemsSource = fontNames;
+            OverlayFontFamilyComboBox.SelectedItem = selectedFont;
         }
 
         private void ScheduleSettingsSave() {

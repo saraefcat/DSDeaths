@@ -46,6 +46,13 @@ namespace DSDeaths.Live {
             double scale = clampedScale / 100.0;
             double newWidth = BaseWidth * scale;
             double newHeight = BaseHeight * scale;
+            bool sizeChanged = Math.Abs(Width - newWidth) > 0.01 ||
+                Math.Abs(Height - newHeight) > 0.01;
+
+            if (!sizeChanged) {
+                return;
+            }
+
             bool keepCenter = IsLoaded && IsVisible;
             double centerX = keepCenter ? Left + ActualWidth / 2.0 : 0;
             double centerY = keepCenter ? Top + ActualHeight / 2.0 : 0;

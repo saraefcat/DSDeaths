@@ -23,6 +23,7 @@ namespace DSDeaths.Live {
         private bool initializing = true;
         private bool updatingControls;
         private bool allowClose;
+        private bool columnBalancePending;
 
         public MainWindow(
             DSDeathsMonitor monitor,
@@ -66,6 +67,7 @@ namespace DSDeaths.Live {
                 MessageBox.Show(this, warning, Localization.Get("ErrorTitle"),
                     MessageBoxButton.OK, MessageBoxImage.Warning);
             }
+            ScheduleColumnBalance();
         }
 
         private void Monitor_SnapshotChanged(object sender, MonitorSnapshotEventArgs e) {
@@ -155,6 +157,7 @@ namespace DSDeaths.Live {
             if (overlayWindow != null) {
                 overlayWindow.UpdateDeathCount(snapshot.HasDeathCount ? snapshot.DeathCount : 0);
             }
+            ScheduleColumnBalance();
         }
 
         private void ApplyLocalization() {
@@ -204,6 +207,39 @@ namespace DSDeaths.Live {
                 ApplySnapshot(latestSnapshot);
             } else {
                 MonitorStatusText.Text = Localization.Get("StatusReady");
+            }
+            ScheduleColumnBalance();
+        }
+
+        private void ScheduleColumnBalance() {
+            if (columnBalancePending || Dispatcher.HasShutdownStarted) {
+                return;
+            }
+
+            columnBalancePending = true;
+            Dispatcher.BeginInvoke(
+                DispatcherPriority.Loaded,
+                new Action(delegate {
+                    columnBalancePending = false;
+                    BalanceColumnHeights();
+                }));
+        }
+
+        private void BalanceColumnHeights() {
+            if (!IsLoaded || LeftColumnPanel.DesiredSize.Height <= 0 ||
+                RightColumnPanel.DesiredSize.Height <= 0) {
+                return;
+            }
+
+            double leftWithoutOverlayButton =
+                LeftColumnPanel.DesiredSize.Height - OverlayButton.DesiredSize.Height;
+            double targetButtonHeight = Math.Max(
+                OverlayButton.MinHeight,
+                RightColumnPanel.DesiredSize.Height - leftWithoutOverlayButton);
+
+            if (double.IsNaN(OverlayButton.Height) ||
+                Math.Abs(OverlayButton.Height - targetButtonHeight) > 0.5) {
+                OverlayButton.Height = targetButtonHeight;
             }
         }
 

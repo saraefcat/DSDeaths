@@ -91,7 +91,7 @@
                     <ColumnDefinition Width="*" />
                 </Grid.ColumnDefinitions>
 
-                <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                <StackPanel x:Name="LeftColumnPanel" Grid.Column="0" Margin="0,0,10,0">
                     <Border Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource PanelBorderBrush}"
                             BorderThickness="1" CornerRadius="8" Padding="22" Margin="0,0,0,18">
                         <StackPanel>
@@ -107,7 +107,8 @@
                         </StackPanel>
                     </Border>
 
-                    <Button x:Name="OverlayButton" Click="OverlayButton_Click" HorizontalAlignment="Stretch" />
+                    <Button x:Name="OverlayButton" Click="OverlayButton_Click" HorizontalAlignment="Stretch"
+                            MinHeight="56" VerticalContentAlignment="Center" />
 
                     <Border Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource PanelBorderBrush}"
                             BorderThickness="1" CornerRadius="8" Padding="18" Margin="0,18,0,0">
@@ -160,7 +161,7 @@
                     </Border>
                 </StackPanel>
 
-                <StackPanel Grid.Column="1" Margin="10,0,0,0">
+                <StackPanel x:Name="RightColumnPanel" Grid.Column="1" Margin="10,0,0,0">
                     <Border Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource PanelBorderBrush}"
                             BorderThickness="1" CornerRadius="8" Padding="20" Margin="0,0,0,18">
                         <StackPanel x:Name="OffsetPanel">

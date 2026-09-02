@@ -11,6 +11,7 @@
     <LangVersion>7.3</LangVersion>
     <Nullable>disable</Nullable>
     <ApplicationManifest>app.manifest</ApplicationManifest>
+    <ApplicationIcon>Assets\DSDeaths.Live.ico</ApplicationIcon>
     <AssemblyVersion>1.2.0.0</AssemblyVersion>
     <FileVersion>1.2.0.0</FileVersion>
     <Version>1.2.0-rc1</Version>
@@ -18,5 +19,9 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net48" Version="1.0.3" PrivateAssets="all" />
     <ProjectReference Include="..\DSDeaths.Core\DSDeaths.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="Assets\DSDeaths.Live.ico" />
+    <Resource Include="Assets\DSDeaths.Live.Icon.png" />
   </ItemGroup>
 </Project>

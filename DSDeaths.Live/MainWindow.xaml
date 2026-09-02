@@ -4,6 +4,7 @@
         Title="DSDeaths Live"
         Width="920" Height="800" MinWidth="780" MinHeight="620"
         WindowStartupLocation="CenterScreen"
+        Icon="Assets/DSDeaths.Live.ico"
         Background="#0D1117" Foreground="#F0F3F6"
         FontFamily="Segoe UI" UseLayoutRounding="True">
     <Window.Resources>
@@ -81,11 +82,8 @@
 
         <Border Grid.Row="0" Background="#111720" BorderBrush="#273140" BorderThickness="0,0,0,1" Padding="26,19">
             <DockPanel>
-                <Grid DockPanel.Dock="Left" Width="54" Height="54" Margin="0,0,16,0">
-                    <Ellipse Stroke="{StaticResource AccentBrush}" StrokeThickness="3" />
-                    <Ellipse Width="26" Height="26" Stroke="#896E37" StrokeThickness="2" />
-                    <Ellipse Width="6" Height="6" Fill="{StaticResource AccentBrush}" />
-                </Grid>
+                <Image DockPanel.Dock="Left" Source="Assets/DSDeaths.Live.Icon.png"
+                       Width="54" Height="54" Margin="0,0,16,0" Stretch="Uniform" />
                 <StackPanel VerticalAlignment="Center">
                     <TextBlock x:Name="TitleText" FontSize="25" FontWeight="SemiBold" />
                     <TextBlock x:Name="SubtitleText" Foreground="{StaticResource MutedBrush}" Margin="0,3,0,0" />

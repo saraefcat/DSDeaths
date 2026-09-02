@@ -16,6 +16,7 @@ namespace DSDeaths.Live {
         private readonly string startupWarning;
         private readonly DispatcherTimer settingsSaveTimer;
         private Forms.NotifyIcon trayIcon;
+        private System.Drawing.Icon trayAppIcon;
         private Forms.ToolStripMenuItem trayShowItem;
         private Forms.ToolStripMenuItem trayExitItem;
         private OverlayWindow overlayWindow;
@@ -513,8 +514,9 @@ namespace DSDeaths.Live {
             menu.Items.Add(new Forms.ToolStripSeparator());
             menu.Items.Add(trayExitItem);
 
+            trayAppIcon = System.Drawing.Icon.ExtractAssociatedIcon(typeof(MainWindow).Assembly.Location);
             trayIcon = new Forms.NotifyIcon {
-                Icon = System.Drawing.SystemIcons.Application,
+                Icon = trayAppIcon ?? System.Drawing.SystemIcons.Application,
                 Visible = true,
                 ContextMenuStrip = menu
             };
@@ -561,6 +563,10 @@ namespace DSDeaths.Live {
                 trayIcon.Visible = false;
                 trayIcon.Dispose();
                 trayIcon = null;
+            }
+            if (trayAppIcon != null) {
+                trayAppIcon.Dispose();
+                trayAppIcon = null;
             }
             base.OnClosed(e);
         }

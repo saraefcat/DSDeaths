@@ -4,7 +4,7 @@
         Title="DSDeaths Live"
         Width="920" Height="800" MinWidth="780" MinHeight="620"
         WindowStartupLocation="CenterScreen"
-        Icon="Assets/DSDeaths.Live.ico"
+        Icon="Assets/DSDeaths.Live.Icon.png"
         Background="#0D1117" Foreground="#F0F3F6"
         FontFamily="Segoe UI" UseLayoutRounding="True">
     <Window.Resources>

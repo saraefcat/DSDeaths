@@ -39,6 +39,8 @@
   <data name="CloseToTray" xml:space="preserve"><value>Minimize to notification area</value></data>
   <data name="CloseImmediately" xml:space="preserve"><value>Exit the application</value></data>
   <data name="OverlayAppearanceTitle" xml:space="preserve"><value>Overlay appearance</value></data>
+  <data name="OverlayScale" xml:space="preserve"><value>Overall scale</value></data>
+  <data name="OverlayScaleValueFormat" xml:space="preserve"><value>{0}%</value></data>
   <data name="BackgroundOpacity" xml:space="preserve"><value>Background opacity</value></data>
   <data name="OpacityValueFormat" xml:space="preserve"><value>{0}%</value></data>
   <data name="TextColor" xml:space="preserve"><value>Counter text color</value></data>

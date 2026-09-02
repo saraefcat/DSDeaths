@@ -44,6 +44,7 @@ namespace DSDeaths.Live {
             SelectConfiguredLanguage();
             PopulateFontFamilies();
             SelectCloseButtonBehavior();
+            OverlayScaleSlider.Value = settings.OverlayScalePercent;
             OverlayOpacitySlider.Value = settings.OverlayBackgroundOpacity;
             OverlayFontSizeSlider.Value = settings.OverlayFontSize;
             ApplyOverlayAppearance();
@@ -182,6 +183,7 @@ namespace DSDeaths.Live {
             ((ComboBoxItem)CloseButtonBehaviorComboBox.Items[0]).Content = Localization.Get("CloseToTray");
             ((ComboBoxItem)CloseButtonBehaviorComboBox.Items[1]).Content = Localization.Get("CloseImmediately");
             OverlayAppearanceTitleText.Text = Localization.Get("OverlayAppearanceTitle");
+            OverlayScaleLabelText.Text = Localization.Get("OverlayScale");
             BackgroundOpacityLabelText.Text = Localization.Get("BackgroundOpacity");
             TextColorLabelText.Text = Localization.Get("TextColor");
             FontFamilyLabelText.Text = Localization.Get("FontFamily");
@@ -304,7 +306,8 @@ namespace DSDeaths.Live {
                 settings.OverlayBackgroundOpacity,
                 settings.OverlayTextColor,
                 settings.OverlayFontFamily,
-                settings.OverlayFontSize);
+                settings.OverlayFontSize,
+                settings.OverlayScalePercent);
             overlayWindow.UpdateDeathCount(
                 latestSnapshot != null && latestSnapshot.HasDeathCount ? latestSnapshot.DeathCount : 0);
             overlayWindow.Show();
@@ -378,6 +381,16 @@ namespace DSDeaths.Live {
             ScheduleSettingsSave();
         }
 
+        private void OverlayScaleSlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {
+            if (initializing) {
+                return;
+            }
+
+            settings.OverlayScalePercent = (int)Math.Round(e.NewValue);
+            ApplyOverlayAppearance();
+            ScheduleSettingsSave();
+        }
+
         private void TextColorButton_Click(object sender, RoutedEventArgs e) {
             System.Drawing.Color initialColor;
             try {
@@ -430,6 +443,9 @@ namespace DSDeaths.Live {
         }
 
         private void ApplyOverlayAppearance() {
+            OverlayScaleValueText.Text = Localization.Format(
+                "OverlayScaleValueFormat",
+                settings.OverlayScalePercent);
             OpacityValueText.Text = Localization.Format(
                 "OpacityValueFormat",
                 settings.OverlayBackgroundOpacity);
@@ -442,7 +458,8 @@ namespace DSDeaths.Live {
                     settings.OverlayBackgroundOpacity,
                     settings.OverlayTextColor,
                     settings.OverlayFontFamily,
-                    settings.OverlayFontSize);
+                    settings.OverlayFontSize,
+                    settings.OverlayScalePercent);
             }
         }
 

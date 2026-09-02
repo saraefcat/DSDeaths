@@ -14,6 +14,7 @@ namespace DSDeaths.Live {
             OverlayTextColor = "#FFFFFF";
             OverlayFontFamily = "Segoe UI";
             OverlayFontSize = 58;
+            OverlayScalePercent = 100;
         }
 
         public string Language { get; set; }
@@ -23,6 +24,7 @@ namespace DSDeaths.Live {
         public string OverlayTextColor { get; set; }
         public string OverlayFontFamily { get; set; }
         public int OverlayFontSize { get; set; }
+        public int OverlayScalePercent { get; set; }
 
         public static LiveSettings Load(string path, out string warning) {
             var settings = new LiveSettings();
@@ -98,6 +100,14 @@ namespace DSDeaths.Live {
                         } else {
                             warnings.Add("Ignored invalid OverlayFontSize value: " + value);
                         }
+                    } else if (key.Equals("OverlayScalePercent", StringComparison.OrdinalIgnoreCase)) {
+                        int parsed;
+                        if (int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out parsed) &&
+                            parsed >= 50 && parsed <= 200) {
+                            settings.OverlayScalePercent = parsed;
+                        } else {
+                            warnings.Add("Ignored invalid OverlayScalePercent value: " + value);
+                        }
                     }
                 }
             } catch (IOException exception) {
@@ -121,7 +131,8 @@ namespace DSDeaths.Live {
                 "OverlayBackgroundOpacity=" + OverlayBackgroundOpacity.ToString(CultureInfo.InvariantCulture),
                 "OverlayTextColor=" + OverlayTextColor,
                 "OverlayFontFamily=" + OverlayFontFamily,
-                "OverlayFontSize=" + OverlayFontSize.ToString(CultureInfo.InvariantCulture)
+                "OverlayFontSize=" + OverlayFontSize.ToString(CultureInfo.InvariantCulture),
+                "OverlayScalePercent=" + OverlayScalePercent.ToString(CultureInfo.InvariantCulture)
             };
 
             try {

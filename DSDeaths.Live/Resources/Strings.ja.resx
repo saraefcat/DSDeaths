@@ -39,6 +39,8 @@
   <data name="CloseToTray" xml:space="preserve"><value>通知領域に収納</value></data>
   <data name="CloseImmediately" xml:space="preserve"><value>アプリを終了</value></data>
   <data name="OverlayAppearanceTitle" xml:space="preserve"><value>オーバーレイの外観</value></data>
+  <data name="OverlayScale" xml:space="preserve"><value>全体倍率</value></data>
+  <data name="OverlayScaleValueFormat" xml:space="preserve"><value>{0}%</value></data>
   <data name="BackgroundOpacity" xml:space="preserve"><value>背景の不透明度</value></data>
   <data name="OpacityValueFormat" xml:space="preserve"><value>{0}%</value></data>
   <data name="TextColor" xml:space="preserve"><value>カウント文字色</value></data>

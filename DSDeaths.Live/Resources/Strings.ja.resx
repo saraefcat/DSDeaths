@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="AppTitle" xml:space="preserve"><value>DSDeaths Live</value></data>
+  <data name="Subtitle" xml:space="preserve"><value>配信用デスカウンター</value></data>
+  <data name="NoGame" xml:space="preserve"><value>対応ゲームは見つかっていません</value></data>
+  <data name="Searching" xml:space="preserve"><value>対応ゲームの起動を待っています...</value></data>
+  <data name="Connecting" xml:space="preserve"><value>{0} に接続しています...</value></data>
+  <data name="Monitoring" xml:space="preserve"><value>{0} を監視中（{1}ビット）</value></data>
+  <data name="Unsupported" xml:space="preserve"><value>このゲーム版は安全に監視できません。</value></data>
+  <data name="MonitorError" xml:space="preserve"><value>監視エラー</value></data>
+  <data name="Stopped" xml:space="preserve"><value>監視を停止しました</value></data>
+  <data name="DeathsLabel" xml:space="preserve"><value>DEATHS</value></data>
+  <data name="RawFormat" xml:space="preserve"><value>累計値: {0}</value></data>
+  <data name="RawUnavailable" xml:space="preserve"><value>累計値: —</value></data>
+  <data name="EacWarningTitle" xml:space="preserve"><value>ELDEN RING の安全上の注意</value></data>
+  <data name="EacWarningText" xml:space="preserve"><value>Easy Anti-Cheatを無効にし、オフラインでのみ使用してください。</value></data>
+  <data name="OffsetTitle" xml:space="preserve"><value>周回オフセット</value></data>
+  <data name="OffsetOnly" xml:space="preserve"><value>Elden Ring専用</value></data>
+  <data name="OffsetEnable" xml:space="preserve"><value>ゼロ基準を有効にする</value></data>
+  <data name="BaselineLabel" xml:space="preserve"><value>ゼロ基準値</value></data>
+  <data name="SetCurrentZero" xml:space="preserve"><value>現在値を0に設定</value></data>
+  <data name="Apply" xml:space="preserve"><value>適用</value></data>
+  <data name="OffsetHelp" xml:space="preserve"><value>Elden Ringの累計値から保存した基準値を差し引きます。ゲームやセーブデータは一切変更しません。</value></data>
+  <data name="ObsTitle" xml:space="preserve"><value>OBSテキスト出力</value></data>
+  <data name="ObsReady" xml:space="preserve"><value>DSDeaths.txt に出力中</value></data>
+  <data name="ObsError" xml:space="preserve"><value>DSDeaths.txt に書き込めません</value></data>
+  <data name="OutputPathLabel" xml:space="preserve"><value>ファイル: {0}</value></data>
+  <data name="SettingsTitle" xml:space="preserve"><value>表示設定</value></data>
+  <data name="LanguageLabel" xml:space="preserve"><value>言語</value></data>
+  <data name="LanguageAuto" xml:space="preserve"><value>Windowsの設定</value></data>
+  <data name="LanguageJapanese" xml:space="preserve"><value>日本語</value></data>
+  <data name="LanguageEnglish" xml:space="preserve"><value>English</value></data>
+  <data name="MinimizeToTray" xml:space="preserve"><value>閉じたときも通知領域で実行する</value></data>
+  <data name="ShowOverlay" xml:space="preserve"><value>OBSオーバーレイを表示</value></data>
+  <data name="HideOverlay" xml:space="preserve"><value>OBSオーバーレイを隠す</value></data>
+  <data name="OverlayHint" xml:space="preserve"><value>ドラッグで移動・右クリックで非表示</value></data>
+  <data name="StatusReady" xml:space="preserve"><value>準備完了</value></data>
+  <data name="AlreadyRunningTitle" xml:space="preserve"><value>DSDeathsは起動済みです</value></data>
+  <data name="AlreadyRunningMessage" xml:space="preserve"><value>別のカウンターを起動する前に、DSDeathsまたはDSDeaths Liveを終了してください。</value></data>
+  <data name="ErrorTitle" xml:space="preserve"><value>DSDeaths Live</value></data>
+  <data name="InvalidBaseline" xml:space="preserve"><value>ゼロ基準値には0以上の整数を入力してください。</value></data>
+  <data name="CurrentZeroSuccess" xml:space="preserve"><value>現在の累計値をゼロ基準に設定しました。</value></data>
+  <data name="BaselineSaved" xml:space="preserve"><value>ゼロ基準値を保存し、オフセットを有効にしました。</value></data>
+  <data name="SettingsSaveError" xml:space="preserve"><value>GUI設定を保存できませんでした: {0}</value></data>
+  <data name="TrayShow" xml:space="preserve"><value>DSDeaths Liveを表示</value></data>
+  <data name="TrayExit" xml:space="preserve"><value>終了</value></data>
+  <data name="ClampedWarning" xml:space="preserve"><value>累計値が保存済みの基準値より小さいため、表示値を0にしています。</value></data>
+</root>

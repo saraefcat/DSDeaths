@@ -2,23 +2,23 @@ using System;
 using System.Collections.Generic;
 
 namespace DSDeaths {
-    internal sealed class EldenRingSignatureMatch {
+    public sealed class EldenRingSignatureMatch {
         internal EldenRingSignatureMatch(long instructionAddress, long pointerStorageAddress) {
             InstructionAddress = instructionAddress;
             PointerStorageAddress = pointerStorageAddress;
         }
 
-        internal long InstructionAddress { get; private set; }
-        internal long PointerStorageAddress { get; private set; }
+        public long InstructionAddress { get; private set; }
+        public long PointerStorageAddress { get; private set; }
     }
 
-    internal static class EldenRingSignature {
-        internal const int FieldOffset = 0x94;
-        internal const int PatternLength = 20;
-        internal const string PatternText =
+    public static class EldenRingSignature {
+        public const int FieldOffset = 0x94;
+        public const int PatternLength = 20;
+        public const string PatternText =
             "48 8B 05 ?? ?? ?? ?? 48 85 C0 74 07 8B 80 94 00 00 00 C3 C3";
 
-        internal static List<EldenRingSignatureMatch> Find(byte[] buffer, long bufferAddress) {
+        public static List<EldenRingSignatureMatch> Find(byte[] buffer, long bufferAddress) {
             if (buffer == null) {
                 throw new ArgumentNullException("buffer");
             }

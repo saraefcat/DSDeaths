@@ -10,6 +10,9 @@ address-finding utilities for future game updates.
 This is an automatic death counter for FromSoftware games. It keeps reading your current death count from RAM while the game is running and writes it to a file when it changes. A sample use case is displaying your death count on stream using a Text Source in OBS Studio reading from the created file.
 The death count is not reset when you enter NG+.
 
+DSDeaths opens game processes with read-only access. It does not write to game
+memory or modify save files.
+
 ## Which games are supported?
 
  * DARK SOULS: Prepare To Die Edition
@@ -39,11 +42,43 @@ disabled.
 
 ## How do I use it?
 
-Just double click it. It writes the current death count into `DSDeaths.txt` in the current directory.
+Choose either front end and double-click it:
+
+- `DSDeaths.exe` is the original lightweight console interface.
+- `DSDeaths.Live.exe` is the WPF interface for desktop and streaming use.
+
+Both use the same monitoring core and write the current death count to
+`DSDeaths.txt` next to the executable. They also share
+`DSDeaths.settings.ini`, so the Elden Ring offset follows you between the two
+interfaces. Run only one interface at a time; a shared instance lock prevents
+both from writing the output file simultaneously.
 
 Loading and character-selection screens may temporarily report `0`; DSDeaths
 writes that value to `DSDeaths.txt` and resumes the active character's count
 once it becomes available.
+
+## DSDeaths Live
+
+DSDeaths Live targets .NET Framework 4.8 and is intended for Windows 11 without
+an additional application runtime installation. It provides:
+
+- automatic detection of every game supported by the console version;
+- Japanese and English UI, with Windows-language detection and English
+  fallback;
+- notification-area operation;
+- the current displayed and raw death counts;
+- status for the `DSDeaths.txt` OBS text output;
+- an optional transparent `DSDeaths Live Overlay` window for OBS Window
+  Capture.
+
+For the overlay, add a Window Capture source in OBS, select
+`DSDeaths Live Overlay`, and enable **Allow Transparency**. The overlay can be
+dragged to a convenient position and hidden with right-click. This is an early
+overlay implementation and should be verified with the intended OBS capture
+method before a public release.
+
+GUI-only preferences are stored in `DSDeaths.Live.settings.ini`. The overlay
+and GUI do not change the plain-number format of `DSDeaths.txt`.
 
 ## Elden Ring run offset
 
@@ -63,6 +98,10 @@ executable and survive application restarts. `DSDeaths.txt` remains a plain
 number. If the active character's raw count is below the saved baseline, the
 output is clamped to `0` and DSDeaths prints a warning; toggle the offset off or
 set a suitable baseline for that character.
+
+In DSDeaths Live, the same controls are available in the **Run offset** panel
+only while Elden Ring is connected. The panel is disabled for every other game;
+offset support has not been enabled for those titles.
 
 ## Maintenance utility
 

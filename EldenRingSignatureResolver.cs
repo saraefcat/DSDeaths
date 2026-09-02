@@ -4,7 +4,7 @@ using System.ComponentModel;
 using System.Runtime.InteropServices;
 
 namespace DSDeaths {
-    internal static class EldenRingSignatureResolver {
+    public static class EldenRingSignatureResolver {
         private const uint MemCommit = 0x1000;
         private const uint PageExecute = 0x10;
         private const uint PageExecuteRead = 0x20;
@@ -42,7 +42,7 @@ namespace DSDeaths {
             int size,
             ref int bytesRead);
 
-        internal static bool TryResolve(
+        public static bool TryResolve(
             IntPtr process,
             IntPtr moduleBase,
             int moduleSize,

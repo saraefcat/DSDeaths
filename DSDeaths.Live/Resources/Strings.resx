@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="AppTitle" xml:space="preserve"><value>DSDeaths Live</value></data>
+  <data name="Subtitle" xml:space="preserve"><value>Death counter for streaming</value></data>
+  <data name="NoGame" xml:space="preserve"><value>No supported game detected</value></data>
+  <data name="Searching" xml:space="preserve"><value>Waiting for a supported game...</value></data>
+  <data name="Connecting" xml:space="preserve"><value>Connecting to {0}...</value></data>
+  <data name="Monitoring" xml:space="preserve"><value>Monitoring {0} ({1}-bit)</value></data>
+  <data name="Unsupported" xml:space="preserve"><value>This game version cannot be monitored safely.</value></data>
+  <data name="MonitorError" xml:space="preserve"><value>Monitoring error</value></data>
+  <data name="Stopped" xml:space="preserve"><value>Monitoring stopped</value></data>
+  <data name="DeathsLabel" xml:space="preserve"><value>DEATHS</value></data>
+  <data name="RawFormat" xml:space="preserve"><value>Raw count: {0}</value></data>
+  <data name="RawUnavailable" xml:space="preserve"><value>Raw count: —</value></data>
+  <data name="EacWarningTitle" xml:space="preserve"><value>ELDEN RING SAFETY</value></data>
+  <data name="EacWarningText" xml:space="preserve"><value>Use only offline with Easy Anti-Cheat disabled.</value></data>
+  <data name="OffsetTitle" xml:space="preserve"><value>Run offset</value></data>
+  <data name="OffsetOnly" xml:space="preserve"><value>Elden Ring only</value></data>
+  <data name="OffsetEnable" xml:space="preserve"><value>Enable zero baseline</value></data>
+  <data name="BaselineLabel" xml:space="preserve"><value>Zero baseline</value></data>
+  <data name="SetCurrentZero" xml:space="preserve"><value>Set current as 0</value></data>
+  <data name="Apply" xml:space="preserve"><value>Apply</value></data>
+  <data name="OffsetHelp" xml:space="preserve"><value>The saved baseline is subtracted from Elden Ring's cumulative count. Game and save data are never modified.</value></data>
+  <data name="ObsTitle" xml:space="preserve"><value>OBS text output</value></data>
+  <data name="ObsReady" xml:space="preserve"><value>Writing DSDeaths.txt</value></data>
+  <data name="ObsError" xml:space="preserve"><value>Could not write DSDeaths.txt</value></data>
+  <data name="OutputPathLabel" xml:space="preserve"><value>File: {0}</value></data>
+  <data name="SettingsTitle" xml:space="preserve"><value>Display</value></data>
+  <data name="LanguageLabel" xml:space="preserve"><value>Language</value></data>
+  <data name="LanguageAuto" xml:space="preserve"><value>Windows default</value></data>
+  <data name="LanguageJapanese" xml:space="preserve"><value>Japanese</value></data>
+  <data name="LanguageEnglish" xml:space="preserve"><value>English</value></data>
+  <data name="MinimizeToTray" xml:space="preserve"><value>Keep running in the notification area</value></data>
+  <data name="ShowOverlay" xml:space="preserve"><value>Show OBS overlay</value></data>
+  <data name="HideOverlay" xml:space="preserve"><value>Hide OBS overlay</value></data>
+  <data name="OverlayHint" xml:space="preserve"><value>Drag to move · Right-click to hide</value></data>
+  <data name="StatusReady" xml:space="preserve"><value>Ready</value></data>
+  <data name="AlreadyRunningTitle" xml:space="preserve"><value>DSDeaths is already running</value></data>
+  <data name="AlreadyRunningMessage" xml:space="preserve"><value>Close DSDeaths or DSDeaths Live before starting another counter.</value></data>
+  <data name="ErrorTitle" xml:space="preserve"><value>DSDeaths Live</value></data>
+  <data name="InvalidBaseline" xml:space="preserve"><value>Enter a non-negative whole number for the zero baseline.</value></data>
+  <data name="CurrentZeroSuccess" xml:space="preserve"><value>The current raw count is now the zero baseline.</value></data>
+  <data name="BaselineSaved" xml:space="preserve"><value>The zero baseline was saved and enabled.</value></data>
+  <data name="SettingsSaveError" xml:space="preserve"><value>Could not save GUI settings: {0}</value></data>
+  <data name="TrayShow" xml:space="preserve"><value>Show DSDeaths Live</value></data>
+  <data name="TrayExit" xml:space="preserve"><value>Exit</value></data>
+  <data name="ClampedWarning" xml:space="preserve"><value>The raw count is below the saved baseline, so the displayed count is clamped to 0.</value></data>
+</root>

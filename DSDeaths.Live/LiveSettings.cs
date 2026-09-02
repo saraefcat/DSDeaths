@@ -3,29 +3,22 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 
-namespace DSDeaths {
-    public sealed class EldenRingOffsetSettings {
-        public const string FileName = "DSDeaths.settings.ini";
+namespace DSDeaths.Live {
+    public sealed class LiveSettings {
+        public const string FileName = "DSDeaths.Live.settings.ini";
 
-        const string EnabledKey = "EldenRingOffsetEnabled";
-        const string OffsetKey = "EldenRingDeathOffset";
-
-        public bool Enabled { get; set; }
-        public int Offset { get; set; }
-
-        public int Apply(int rawDeathCount) {
-            if (!Enabled) {
-                return rawDeathCount;
-            }
-
-            long adjusted = (long)rawDeathCount - Offset;
-            return adjusted < 0 ? 0 : (int)adjusted;
+        public LiveSettings() {
+            Language = "auto";
+            MinimizeToTray = true;
         }
 
-        public static EldenRingOffsetSettings Load(string path, out string warning) {
-            var settings = new EldenRingOffsetSettings();
-            var warnings = new List<string>();
+        public string Language { get; set; }
+        public bool MinimizeToTray { get; set; }
+        public bool OverlayVisible { get; set; }
 
+        public static LiveSettings Load(string path, out string warning) {
+            var settings = new LiveSettings();
+            var warnings = new List<string>();
             if (!File.Exists(path)) {
                 warning = null;
                 return settings;
@@ -41,26 +34,33 @@ namespace DSDeaths {
 
                     int separator = line.IndexOf('=');
                     if (separator <= 0) {
-                        warnings.Add("Ignored malformed settings line: " + rawLine);
+                        warnings.Add("Ignored malformed GUI settings line: " + rawLine);
                         continue;
                     }
 
                     string key = line.Substring(0, separator).Trim();
                     string value = line.Substring(separator + 1).Trim();
-
-                    if (key.Equals(EnabledKey, StringComparison.OrdinalIgnoreCase)) {
-                        bool enabled;
-                        if (TryParseBoolean(value, out enabled)) {
-                            settings.Enabled = enabled;
+                    if (key.Equals("Language", StringComparison.OrdinalIgnoreCase)) {
+                        if (value.Equals("auto", StringComparison.OrdinalIgnoreCase) ||
+                            value.Equals("ja", StringComparison.OrdinalIgnoreCase) ||
+                            value.Equals("en", StringComparison.OrdinalIgnoreCase)) {
+                            settings.Language = value.ToLowerInvariant();
                         } else {
-                            warnings.Add("Ignored invalid " + EnabledKey + " value: " + value);
+                            warnings.Add("Ignored invalid Language value: " + value);
                         }
-                    } else if (key.Equals(OffsetKey, StringComparison.OrdinalIgnoreCase)) {
-                        int offset;
-                        if (int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out offset) && offset >= 0) {
-                            settings.Offset = offset;
+                    } else if (key.Equals("MinimizeToTray", StringComparison.OrdinalIgnoreCase)) {
+                        bool parsed;
+                        if (bool.TryParse(value, out parsed)) {
+                            settings.MinimizeToTray = parsed;
                         } else {
-                            warnings.Add("Ignored invalid " + OffsetKey + " value: " + value);
+                            warnings.Add("Ignored invalid MinimizeToTray value: " + value);
+                        }
+                    } else if (key.Equals("OverlayVisible", StringComparison.OrdinalIgnoreCase)) {
+                        bool parsed;
+                        if (bool.TryParse(value, out parsed)) {
+                            settings.OverlayVisible = parsed;
+                        } else {
+                            warnings.Add("Ignored invalid OverlayVisible value: " + value);
                         }
                     }
                 }
@@ -78,14 +78,14 @@ namespace DSDeaths {
             string temporaryPath = path + ".tmp";
             string[] lines =
             {
-                "# DSDeaths runtime settings. This file is updated by the application.",
-                EnabledKey + "=" + Enabled.ToString(CultureInfo.InvariantCulture).ToLowerInvariant(),
-                OffsetKey + "=" + Offset.ToString(CultureInfo.InvariantCulture)
+                "# DSDeaths Live GUI settings. This file is updated by the application.",
+                "Language=" + Language,
+                "MinimizeToTray=" + MinimizeToTray.ToString(CultureInfo.InvariantCulture).ToLowerInvariant(),
+                "OverlayVisible=" + OverlayVisible.ToString(CultureInfo.InvariantCulture).ToLowerInvariant()
             };
 
             try {
                 File.WriteAllLines(temporaryPath, lines);
-
                 if (File.Exists(path)) {
                     try {
                         File.Replace(temporaryPath, path, null);
@@ -99,42 +99,20 @@ namespace DSDeaths {
                 } else {
                     File.Move(temporaryPath, path);
                 }
-
                 error = null;
                 return true;
             } catch (IOException exception) {
-                TryDeleteTemporaryFile(temporaryPath);
+                TryDelete(temporaryPath);
                 error = exception.Message;
                 return false;
             } catch (UnauthorizedAccessException exception) {
-                TryDeleteTemporaryFile(temporaryPath);
+                TryDelete(temporaryPath);
                 error = exception.Message;
                 return false;
             }
         }
 
-        static bool TryParseBoolean(string value, out bool result) {
-            if (bool.TryParse(value, out result)) {
-                return true;
-            }
-
-            if (value.Equals("1", StringComparison.OrdinalIgnoreCase) ||
-                value.Equals("on", StringComparison.OrdinalIgnoreCase)) {
-                result = true;
-                return true;
-            }
-
-            if (value.Equals("0", StringComparison.OrdinalIgnoreCase) ||
-                value.Equals("off", StringComparison.OrdinalIgnoreCase)) {
-                result = false;
-                return true;
-            }
-
-            result = false;
-            return false;
-        }
-
-        static void TryDeleteTemporaryFile(string path) {
+        private static void TryDelete(string path) {
             try {
                 if (File.Exists(path)) {
                     File.Delete(path);

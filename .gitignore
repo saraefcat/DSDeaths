@@ -43,6 +43,8 @@ project.lock.json
 artifacts/
 DSDeaths.settings.ini
 DSDeaths.settings.ini.tmp
+DSDeaths.Live.settings.ini
+DSDeaths.Live.settings.ini.tmp
 
 *_i.c
 *_p.c

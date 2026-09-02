@@ -22,6 +22,7 @@
   </ItemGroup>
   <ItemGroup>
     <Resource Include="Assets\DSDeaths.Live.ico" />
+    <Resource Include="Assets\DSDeaths.Live.Header.png" />
     <Resource Include="Assets\DSDeaths.Live.Icon.png" />
   </ItemGroup>
 </Project>

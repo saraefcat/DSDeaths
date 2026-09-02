@@ -82,7 +82,7 @@
 
         <Border Grid.Row="0" Background="#111720" BorderBrush="#273140" BorderThickness="0,0,0,1" Padding="26,19">
             <DockPanel>
-                <Image DockPanel.Dock="Left" Source="Assets/DSDeaths.Live.Icon.png"
+                <Image DockPanel.Dock="Left" Source="Assets/DSDeaths.Live.Header.png"
                        Width="54" Height="54" Margin="0,0,16,0" Stretch="Uniform" />
                 <StackPanel VerticalAlignment="Center">
                     <TextBlock x:Name="TitleText" FontSize="25" FontWeight="SemiBold" />

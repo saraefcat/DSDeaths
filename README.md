@@ -85,6 +85,10 @@ installed font, and adjust the counter font size. These overlay controls are
 placed directly below the show/hide button, and their choices are restored when
 DSDeaths Live starts again.
 
+The **Close button behavior** setting selects whether the window's close button
+stores DSDeaths Live in the notification area or exits the application
+immediately. **Exit** in the notification-area menu always exits.
+
 ## Elden Ring run offset
 
 Elden Ring stores one cumulative death count across New Game cycles. DSDeaths

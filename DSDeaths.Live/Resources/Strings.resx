@@ -34,7 +34,9 @@
   <data name="LanguageAuto" xml:space="preserve"><value>Windows default</value></data>
   <data name="LanguageJapanese" xml:space="preserve"><value>Japanese</value></data>
   <data name="LanguageEnglish" xml:space="preserve"><value>English</value></data>
-  <data name="MinimizeToTray" xml:space="preserve"><value>Keep running in the notification area</value></data>
+  <data name="CloseButtonBehavior" xml:space="preserve"><value>Close button behavior</value></data>
+  <data name="CloseToTray" xml:space="preserve"><value>Minimize to notification area</value></data>
+  <data name="CloseImmediately" xml:space="preserve"><value>Exit the application</value></data>
   <data name="OverlayAppearanceTitle" xml:space="preserve"><value>Overlay appearance</value></data>
   <data name="BackgroundOpacity" xml:space="preserve"><value>Background opacity</value></data>
   <data name="OpacityValueFormat" xml:space="preserve"><value>{0}%</value></data>

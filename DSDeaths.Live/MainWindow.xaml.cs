@@ -42,7 +42,7 @@ namespace DSDeaths.Live {
             CreateTrayIcon();
             SelectConfiguredLanguage();
             PopulateFontFamilies();
-            MinimizeToTrayCheckBox.IsChecked = settings.MinimizeToTray;
+            SelectCloseButtonBehavior();
             OverlayOpacitySlider.Value = settings.OverlayBackgroundOpacity;
             OverlayFontSizeSlider.Value = settings.OverlayFontSize;
             ApplyOverlayAppearance();
@@ -174,7 +174,9 @@ namespace DSDeaths.Live {
             ObsTitleText.Text = Localization.Get("ObsTitle");
             SettingsTitleText.Text = Localization.Get("SettingsTitle");
             LanguageLabelText.Text = Localization.Get("LanguageLabel");
-            MinimizeToTrayCheckBox.Content = Localization.Get("MinimizeToTray");
+            CloseButtonBehaviorLabelText.Text = Localization.Get("CloseButtonBehavior");
+            ((ComboBoxItem)CloseButtonBehaviorComboBox.Items[0]).Content = Localization.Get("CloseToTray");
+            ((ComboBoxItem)CloseButtonBehaviorComboBox.Items[1]).Content = Localization.Get("CloseImmediately");
             OverlayAppearanceTitleText.Text = Localization.Get("OverlayAppearanceTitle");
             BackgroundOpacityLabelText.Text = Localization.Get("BackgroundOpacity");
             TextColorLabelText.Text = Localization.Get("TextColor");
@@ -306,12 +308,27 @@ namespace DSDeaths.Live {
             SaveSettings();
         }
 
-        private void MinimizeToTrayCheckBox_Click(object sender, RoutedEventArgs e) {
-            if (initializing) {
+        private void CloseButtonBehaviorComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e) {
+            if (initializing || CloseButtonBehaviorComboBox.SelectedItem == null) {
                 return;
             }
-            settings.MinimizeToTray = MinimizeToTrayCheckBox.IsChecked == true;
+
+            var item = (ComboBoxItem)CloseButtonBehaviorComboBox.SelectedItem;
+            settings.MinimizeToTray = string.Equals(
+                item.Tag.ToString(),
+                "tray",
+                StringComparison.OrdinalIgnoreCase);
             SaveSettings();
+        }
+
+        private void SelectCloseButtonBehavior() {
+            string behavior = settings.MinimizeToTray ? "tray" : "exit";
+            foreach (ComboBoxItem item in CloseButtonBehaviorComboBox.Items) {
+                if (string.Equals(item.Tag.ToString(), behavior, StringComparison.OrdinalIgnoreCase)) {
+                    CloseButtonBehaviorComboBox.SelectedItem = item;
+                    return;
+                }
+            }
         }
 
         private void OverlayOpacitySlider_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {

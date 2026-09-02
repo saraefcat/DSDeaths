@@ -201,7 +201,13 @@
                                 <ComboBoxItem Tag="ja" />
                                 <ComboBoxItem Tag="en" />
                             </ComboBox>
-                            <CheckBox x:Name="MinimizeToTrayCheckBox" Click="MinimizeToTrayCheckBox_Click" Margin="0,17,0,0" />
+                            <TextBlock x:Name="CloseButtonBehaviorLabelText" Foreground="{StaticResource MutedBrush}"
+                                       Margin="0,15,0,6" />
+                            <ComboBox x:Name="CloseButtonBehaviorComboBox"
+                                      SelectionChanged="CloseButtonBehaviorComboBox_SelectionChanged">
+                                <ComboBoxItem Tag="tray" />
+                                <ComboBoxItem Tag="exit" />
+                            </ComboBox>
                         </StackPanel>
                     </Border>
                 </StackPanel>

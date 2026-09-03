@@ -132,5 +132,6 @@ offset support has not been enabled for those titles.
 validating the Elden Ring death-count address after a game update. It is meant
 for maintainers, not for normal counter use. See
 [`DSDeaths.AddressFinder/README.md`](DSDeaths.AddressFinder/README.md) before
-running it. Its `--check-exe` mode can scan one saved `eldenring.exe` or every
-backup below a folder without starting the game.
+running it. `Scan-EldenRing-Executables.cmd` or the `--check-exe` mode can scan
+one saved `eldenring.exe` or every matching executable below a folder without
+starting the game.

@@ -133,5 +133,5 @@ DSDeaths Liveでは、Elden Ringへの接続中に限り、**周回オフセッ�
 ための、独立したx64読み取り専用ツールです。通常のカウンター利用者ではなく、
 保守担当者向けです。実行前に
 [`DSDeaths.AddressFinder/README.md`](DSDeaths.AddressFinder/README.md)を確認してください。
-`--check-exe`モードでは、ゲームを起動せずに、保存済みの`eldenring.exe`1件または
-指定フォルダー以下の全バックアップを検査できます。
+`Scan-EldenRing-Executables.cmd`または`--check-exe`モードでは、ゲームを起動せずに、
+保存済みの`eldenring.exe`1件または指定フォルダー以下の全実行ファイルを検査できます。

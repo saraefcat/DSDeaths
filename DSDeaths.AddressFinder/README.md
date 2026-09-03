@@ -15,12 +15,13 @@ runtime executable.
 - It does not declare or call any process-memory write API.
 - It is x64-only.
 
-## Check saved game versions without starting them
+## Scan Elden Ring executables without starting the game
 
-Run `Check-EldenRing-Backups.cmd` and enter the parent folder that contains the
-backups. The tool recursively finds every `eldenring.exe`, calculates its
-SHA-256 hash, scans executable PE sections, and requires exactly one focused
-death-count signature whose pointer target remains inside the image.
+Run `Scan-EldenRing-Executables.cmd` and enter either one `eldenring.exe` or a
+folder containing saved Elden Ring installations. For a folder, the tool
+recursively finds every `eldenring.exe`, calculates its SHA-256 hash, scans
+executable PE sections, and requires exactly one focused death-count signature
+whose pointer target remains inside the image.
 
 The same check can be run directly against either one executable or a folder:
 

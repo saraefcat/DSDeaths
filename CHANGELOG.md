@@ -11,7 +11,7 @@
   visibility, always-on-top control, OBS path actions, diagnostic copying and
   rotating logs, complete settings/offset error localization, and Per-Monitor
   V2 DPI awareness to DSDeaths Live.
-- Added an offline `eldenring.exe` compatibility scanner for saved game
+- Added an offline `eldenring.exe` compatibility scanner for saved executable
   versions and Windows CI for solution builds and all scanner, offset,
   signature, layout, localization, and settings checks.
 

@@ -14,6 +14,8 @@
 - Added an offline `eldenring.exe` compatibility scanner for saved executable
   versions and Windows CI for solution builds and all scanner, offset,
   signature, layout, localization, and settings checks.
+- Tightened the DSDeaths Live vertical spacing so every control fits in the
+  initial 920 x 800 window without requiring a scroll bar.
 
 ## [1.2.0-rc1] - 2026-08-28
 

@@ -89,7 +89,7 @@ DSDeaths Liveは.NET Framework 4.8を対象としています。Windows 11では
 
 1. OBSで「ウィンドウキャプチャ」ソースを追加します。
 2. `DSDeaths Live Overlay`を選択します。
-3. **透過を許可（Allow Transparency）**を有効にします。
+3. **透過を許可**（Allow Transparency）を有効にします。
 
 操作方法：
 

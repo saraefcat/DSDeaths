@@ -70,8 +70,10 @@ an additional application runtime installation. It provides:
 - notification-area operation;
 - the current displayed and raw death counts;
 - status for the `DSDeaths.txt` OBS text output;
+- buttons to open the OBS output folder or copy its complete path;
 - an optional transparent `DSDeaths Live Overlay` window for OBS Window
-  Capture.
+  Capture;
+- diagnostic-detail copying and a size-limited `DSDeaths.Live.log` file.
 
 For the overlay, add a Window Capture source in OBS, select
 `DSDeaths Live Overlay`, and enable **Allow Transparency**. The overlay can be
@@ -85,8 +87,16 @@ the overlay button can adjust the background opacity without fading the counter
 text, choose the counter text color with the Windows color picker, select an
 installed font, adjust the counter font size, add a soft or strong text shadow,
 and scale the entire overlay from 50% to 200% while preserving its aspect
-ratio. These choices are restored when DSDeaths Live starts again. OBS
+ratio. The overlay position is restored after restart and can be locked or
+reset. Its border, `DEATHS` label, and always-on-top behavior can be toggled.
+These choices are restored when DSDeaths Live starts again. The app declares
+Per-Monitor V2 DPI awareness for mixed-scaling multi-monitor layouts. OBS
 text-output status is grouped directly below the Elden Ring run-offset panel.
+
+Hover over the bottom status line to read an untruncated message, or use
+**Copy details** to copy the app version, game, state, status, output path, and
+diagnostic-log path. The log is rotated at 1 MiB, intentionally omits death
+counts and per-death history, and never accesses save files.
 
 The **Close button behavior** setting in the separate Application panel selects
 whether the window's close button stores DSDeaths Live in the notification area
@@ -122,4 +132,5 @@ offset support has not been enabled for those titles.
 validating the Elden Ring death-count address after a game update. It is meant
 for maintainers, not for normal counter use. See
 [`DSDeaths.AddressFinder/README.md`](DSDeaths.AddressFinder/README.md) before
-running it.
+running it. Its `--check-exe` mode can scan one saved `eldenring.exe` or every
+backup below a folder without starting the game.

@@ -4,6 +4,27 @@ using System.Globalization;
 using System.IO;
 
 namespace DSDeaths.Live {
+    internal enum LiveSettingsWarningCode {
+        MalformedLine,
+        InvalidValue,
+        ReadFailed
+    }
+
+    internal sealed class LiveSettingsWarning {
+        internal LiveSettingsWarning(
+            LiveSettingsWarningCode code,
+            string argument0,
+            string argument1) {
+            Code = code;
+            Argument0 = argument0;
+            Argument1 = argument1;
+        }
+
+        internal LiveSettingsWarningCode Code { get; private set; }
+        internal string Argument0 { get; private set; }
+        internal string Argument1 { get; private set; }
+    }
+
     public sealed class LiveSettings {
         public const string FileName = "DSDeaths.Live.settings.ini";
 
@@ -16,6 +37,9 @@ namespace DSDeaths.Live {
             OverlayFontSize = 58;
             OverlayScalePercent = 100;
             OverlayTextShadow = "soft";
+            OverlayShowBorder = true;
+            OverlayShowLabel = true;
+            OverlayTopmost = true;
         }
 
         public string Language { get; set; }
@@ -27,12 +51,31 @@ namespace DSDeaths.Live {
         public int OverlayFontSize { get; set; }
         public int OverlayScalePercent { get; set; }
         public string OverlayTextShadow { get; set; }
+        public bool OverlayPositionSet { get; set; }
+        public double OverlayLeft { get; set; }
+        public double OverlayTop { get; set; }
+        public bool OverlayPositionLocked { get; set; }
+        public bool OverlayShowBorder { get; set; }
+        public bool OverlayShowLabel { get; set; }
+        public bool OverlayTopmost { get; set; }
 
         public static LiveSettings Load(string path, out string warning) {
+            LiveSettingsWarning[] ignored;
+            return Load(path, out warning, out ignored);
+        }
+
+        internal static LiveSettings Load(
+            string path,
+            out string warning,
+            out LiveSettingsWarning[] warningDetails) {
             var settings = new LiveSettings();
             var warnings = new List<string>();
+            var details = new List<LiveSettingsWarning>();
+            bool hasValidOverlayLeft = false;
+            bool hasValidOverlayTop = false;
             if (!File.Exists(path)) {
                 warning = null;
+                warningDetails = details.ToArray();
                 return settings;
             }
 
@@ -46,7 +89,13 @@ namespace DSDeaths.Live {
 
                     int separator = line.IndexOf('=');
                     if (separator <= 0) {
-                        warnings.Add("Ignored malformed GUI settings line: " + rawLine);
+                        AddWarning(
+                            warnings,
+                            details,
+                            "Ignored malformed GUI settings line: " + rawLine,
+                            LiveSettingsWarningCode.MalformedLine,
+                            rawLine,
+                            null);
                         continue;
                     }
 
@@ -58,21 +107,21 @@ namespace DSDeaths.Live {
                             value.Equals("en", StringComparison.OrdinalIgnoreCase)) {
                             settings.Language = value.ToLowerInvariant();
                         } else {
-                            warnings.Add("Ignored invalid Language value: " + value);
+                            AddInvalidValueWarning(warnings, details, "Language", value);
                         }
                     } else if (key.Equals("MinimizeToTray", StringComparison.OrdinalIgnoreCase)) {
                         bool parsed;
                         if (bool.TryParse(value, out parsed)) {
                             settings.MinimizeToTray = parsed;
                         } else {
-                            warnings.Add("Ignored invalid MinimizeToTray value: " + value);
+                            AddInvalidValueWarning(warnings, details, "MinimizeToTray", value);
                         }
                     } else if (key.Equals("OverlayVisible", StringComparison.OrdinalIgnoreCase)) {
                         bool parsed;
                         if (bool.TryParse(value, out parsed)) {
                             settings.OverlayVisible = parsed;
                         } else {
-                            warnings.Add("Ignored invalid OverlayVisible value: " + value);
+                            AddInvalidValueWarning(warnings, details, "OverlayVisible", value);
                         }
                     } else if (key.Equals("OverlayBackgroundOpacity", StringComparison.OrdinalIgnoreCase)) {
                         int parsed;
@@ -80,19 +129,19 @@ namespace DSDeaths.Live {
                             parsed >= 0 && parsed <= 100) {
                             settings.OverlayBackgroundOpacity = parsed;
                         } else {
-                            warnings.Add("Ignored invalid OverlayBackgroundOpacity value: " + value);
+                            AddInvalidValueWarning(warnings, details, "OverlayBackgroundOpacity", value);
                         }
                     } else if (key.Equals("OverlayTextColor", StringComparison.OrdinalIgnoreCase)) {
                         if (IsHexColor(value)) {
                             settings.OverlayTextColor = value.ToUpperInvariant();
                         } else {
-                            warnings.Add("Ignored invalid OverlayTextColor value: " + value);
+                            AddInvalidValueWarning(warnings, details, "OverlayTextColor", value);
                         }
                     } else if (key.Equals("OverlayFontFamily", StringComparison.OrdinalIgnoreCase)) {
                         if (!string.IsNullOrWhiteSpace(value) && value.Length <= 100) {
                             settings.OverlayFontFamily = value;
                         } else {
-                            warnings.Add("Ignored invalid OverlayFontFamily value: " + value);
+                            AddInvalidValueWarning(warnings, details, "OverlayFontFamily", value);
                         }
                     } else if (key.Equals("OverlayFontSize", StringComparison.OrdinalIgnoreCase)) {
                         int parsed;
@@ -100,7 +149,7 @@ namespace DSDeaths.Live {
                             parsed >= 24 && parsed <= 96) {
                             settings.OverlayFontSize = parsed;
                         } else {
-                            warnings.Add("Ignored invalid OverlayFontSize value: " + value);
+                            AddInvalidValueWarning(warnings, details, "OverlayFontSize", value);
                         }
                     } else if (key.Equals("OverlayScalePercent", StringComparison.OrdinalIgnoreCase)) {
                         int parsed;
@@ -108,23 +157,91 @@ namespace DSDeaths.Live {
                             parsed >= 50 && parsed <= 200) {
                             settings.OverlayScalePercent = parsed;
                         } else {
-                            warnings.Add("Ignored invalid OverlayScalePercent value: " + value);
+                            AddInvalidValueWarning(warnings, details, "OverlayScalePercent", value);
                         }
                     } else if (key.Equals("OverlayTextShadow", StringComparison.OrdinalIgnoreCase)) {
                         if (IsTextShadow(value)) {
                             settings.OverlayTextShadow = value.ToLowerInvariant();
                         } else {
-                            warnings.Add("Ignored invalid OverlayTextShadow value: " + value);
+                            AddInvalidValueWarning(warnings, details, "OverlayTextShadow", value);
+                        }
+                    } else if (key.Equals("OverlayPositionSet", StringComparison.OrdinalIgnoreCase)) {
+                        bool parsed;
+                        if (bool.TryParse(value, out parsed)) {
+                            settings.OverlayPositionSet = parsed;
+                        } else {
+                            AddInvalidValueWarning(warnings, details, "OverlayPositionSet", value);
+                        }
+                    } else if (key.Equals("OverlayLeft", StringComparison.OrdinalIgnoreCase)) {
+                        double parsed;
+                        if (TryParseCoordinate(value, out parsed)) {
+                            settings.OverlayLeft = parsed;
+                            hasValidOverlayLeft = true;
+                        } else {
+                            AddInvalidValueWarning(warnings, details, "OverlayLeft", value);
+                        }
+                    } else if (key.Equals("OverlayTop", StringComparison.OrdinalIgnoreCase)) {
+                        double parsed;
+                        if (TryParseCoordinate(value, out parsed)) {
+                            settings.OverlayTop = parsed;
+                            hasValidOverlayTop = true;
+                        } else {
+                            AddInvalidValueWarning(warnings, details, "OverlayTop", value);
+                        }
+                    } else if (key.Equals("OverlayPositionLocked", StringComparison.OrdinalIgnoreCase)) {
+                        bool parsed;
+                        if (bool.TryParse(value, out parsed)) {
+                            settings.OverlayPositionLocked = parsed;
+                        } else {
+                            AddInvalidValueWarning(warnings, details, "OverlayPositionLocked", value);
+                        }
+                    } else if (key.Equals("OverlayShowBorder", StringComparison.OrdinalIgnoreCase)) {
+                        bool parsed;
+                        if (bool.TryParse(value, out parsed)) {
+                            settings.OverlayShowBorder = parsed;
+                        } else {
+                            AddInvalidValueWarning(warnings, details, "OverlayShowBorder", value);
+                        }
+                    } else if (key.Equals("OverlayShowLabel", StringComparison.OrdinalIgnoreCase)) {
+                        bool parsed;
+                        if (bool.TryParse(value, out parsed)) {
+                            settings.OverlayShowLabel = parsed;
+                        } else {
+                            AddInvalidValueWarning(warnings, details, "OverlayShowLabel", value);
+                        }
+                    } else if (key.Equals("OverlayTopmost", StringComparison.OrdinalIgnoreCase)) {
+                        bool parsed;
+                        if (bool.TryParse(value, out parsed)) {
+                            settings.OverlayTopmost = parsed;
+                        } else {
+                            AddInvalidValueWarning(warnings, details, "OverlayTopmost", value);
                         }
                     }
                 }
             } catch (IOException exception) {
-                warnings.Add("Could not read " + FileName + ": " + exception.Message);
+                AddWarning(
+                    warnings,
+                    details,
+                    "Could not read " + FileName + ": " + exception.Message,
+                    LiveSettingsWarningCode.ReadFailed,
+                    FileName,
+                    exception.Message);
             } catch (UnauthorizedAccessException exception) {
-                warnings.Add("Could not read " + FileName + ": " + exception.Message);
+                AddWarning(
+                    warnings,
+                    details,
+                    "Could not read " + FileName + ": " + exception.Message,
+                    LiveSettingsWarningCode.ReadFailed,
+                    FileName,
+                    exception.Message);
+            }
+
+            if (settings.OverlayPositionSet && (!hasValidOverlayLeft || !hasValidOverlayTop)) {
+                settings.OverlayPositionSet = false;
             }
 
             warning = warnings.Count == 0 ? null : string.Join(Environment.NewLine, warnings.ToArray());
+            warningDetails = details.ToArray();
             return settings;
         }
 
@@ -141,7 +258,14 @@ namespace DSDeaths.Live {
                 "OverlayFontFamily=" + OverlayFontFamily,
                 "OverlayFontSize=" + OverlayFontSize.ToString(CultureInfo.InvariantCulture),
                 "OverlayScalePercent=" + OverlayScalePercent.ToString(CultureInfo.InvariantCulture),
-                "OverlayTextShadow=" + OverlayTextShadow
+                "OverlayTextShadow=" + OverlayTextShadow,
+                "OverlayPositionSet=" + OverlayPositionSet.ToString(CultureInfo.InvariantCulture).ToLowerInvariant(),
+                "OverlayLeft=" + OverlayLeft.ToString("R", CultureInfo.InvariantCulture),
+                "OverlayTop=" + OverlayTop.ToString("R", CultureInfo.InvariantCulture),
+                "OverlayPositionLocked=" + OverlayPositionLocked.ToString(CultureInfo.InvariantCulture).ToLowerInvariant(),
+                "OverlayShowBorder=" + OverlayShowBorder.ToString(CultureInfo.InvariantCulture).ToLowerInvariant(),
+                "OverlayShowLabel=" + OverlayShowLabel.ToString(CultureInfo.InvariantCulture).ToLowerInvariant(),
+                "OverlayTopmost=" + OverlayTopmost.ToString(CultureInfo.InvariantCulture).ToLowerInvariant()
             };
 
             try {
@@ -203,6 +327,48 @@ namespace DSDeaths.Live {
             return value.Equals("none", StringComparison.OrdinalIgnoreCase) ||
                    value.Equals("soft", StringComparison.OrdinalIgnoreCase) ||
                    value.Equals("strong", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static bool TryParseCoordinate(string value, out double coordinate) {
+            if (!double.TryParse(
+                    value,
+                    NumberStyles.Float,
+                    CultureInfo.InvariantCulture,
+                    out coordinate) ||
+                double.IsNaN(coordinate) ||
+                double.IsInfinity(coordinate) ||
+                coordinate < -100000 ||
+                coordinate > 100000) {
+                coordinate = 0;
+                return false;
+            }
+
+            return true;
+        }
+
+        private static void AddInvalidValueWarning(
+            List<string> warnings,
+            List<LiveSettingsWarning> details,
+            string key,
+            string value) {
+            AddWarning(
+                warnings,
+                details,
+                "Ignored invalid " + key + " value: " + value,
+                LiveSettingsWarningCode.InvalidValue,
+                key,
+                value);
+        }
+
+        private static void AddWarning(
+            List<string> warnings,
+            List<LiveSettingsWarning> details,
+            string message,
+            LiveSettingsWarningCode code,
+            string argument0,
+            string argument1) {
+            warnings.Add(message);
+            details.Add(new LiveSettingsWarning(code, argument0, argument1));
         }
     }
 }

@@ -1,7 +1,10 @@
 using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Globalization;
+using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
@@ -13,8 +16,9 @@ namespace DSDeaths.Live {
         private readonly DSDeathsMonitor monitor;
         private readonly LiveSettings settings;
         private readonly string settingsPath;
-        private readonly string startupWarning;
+        private readonly LiveSettingsWarning[] startupWarnings;
         private readonly DispatcherTimer settingsSaveTimer;
+        private readonly DispatcherTimer transientStatusTimer;
         private Forms.NotifyIcon trayIcon;
         private System.Drawing.Icon trayAppIcon;
         private Forms.ToolStripMenuItem trayShowItem;
@@ -25,22 +29,27 @@ namespace DSDeaths.Live {
         private bool updatingControls;
         private bool allowClose;
         private bool columnBalancePending;
+        private bool restoringOverlayPosition;
 
-        public MainWindow(
+        internal MainWindow(
             DSDeathsMonitor monitor,
             LiveSettings settings,
             string settingsPath,
-            string startupWarning) {
+            LiveSettingsWarning[] startupWarnings) {
             this.monitor = monitor;
             this.settings = settings;
             this.settingsPath = settingsPath;
-            this.startupWarning = startupWarning;
+            this.startupWarnings = startupWarnings;
 
             InitializeComponent();
             settingsSaveTimer = new DispatcherTimer {
                 Interval = TimeSpan.FromMilliseconds(400)
             };
             settingsSaveTimer.Tick += SettingsSaveTimer_Tick;
+            transientStatusTimer = new DispatcherTimer {
+                Interval = TimeSpan.FromSeconds(2)
+            };
+            transientStatusTimer.Tick += TransientStatusTimer_Tick;
             CreateTrayIcon();
             SelectConfiguredLanguage();
             PopulateFontFamilies();
@@ -49,6 +58,10 @@ namespace DSDeaths.Live {
             OverlayScaleSlider.Value = settings.OverlayScalePercent;
             OverlayOpacitySlider.Value = settings.OverlayBackgroundOpacity;
             OverlayFontSizeSlider.Value = settings.OverlayFontSize;
+            OverlayPositionLockedCheckBox.IsChecked = settings.OverlayPositionLocked;
+            OverlayTopmostCheckBox.IsChecked = settings.OverlayTopmost;
+            OverlayShowBorderCheckBox.IsChecked = settings.OverlayShowBorder;
+            OverlayShowLabelCheckBox.IsChecked = settings.OverlayShowLabel;
             ApplyOverlayAppearance();
             ApplyLocalization();
             latestSnapshot = monitor.LatestSnapshot;
@@ -66,7 +79,9 @@ namespace DSDeaths.Live {
                 ShowOverlay();
             }
 
-            string warning = CombineWarnings(startupWarning, monitor.SettingsWarning);
+            string warning = CombineWarnings(
+                SettingsWarningFormatter.Format(startupWarnings),
+                SettingsWarningFormatter.Format(monitor.SettingsWarnings));
             if (!string.IsNullOrEmpty(warning)) {
                 MessageBox.Show(this, warning, Localization.Get("ErrorTitle"),
                     MessageBoxButton.OK, MessageBoxImage.Warning);
@@ -85,6 +100,7 @@ namespace DSDeaths.Live {
         }
 
         private void ApplySnapshot(MonitorSnapshot snapshot) {
+            DiagnosticLogger.WriteSnapshot(snapshot);
             bool hasGame = snapshot.Game != null;
             bool isEldenRing = hasGame && snapshot.Game.IsEldenRing;
             bool canEditOffset = isEldenRing && snapshot.State == MonitorState.Monitoring;
@@ -191,6 +207,14 @@ namespace DSDeaths.Live {
             FontFamilyLabelText.Text = Localization.Get("FontFamily");
             FontSizeLabelText.Text = Localization.Get("FontSize");
             TextShadowLabelText.Text = Localization.Get("TextShadow");
+            OverlayPositionLockedCheckBox.Content = Localization.Get("OverlayPositionLocked");
+            OverlayTopmostCheckBox.Content = Localization.Get("OverlayTopmost");
+            OverlayShowBorderCheckBox.Content = Localization.Get("OverlayShowBorder");
+            OverlayShowLabelCheckBox.Content = Localization.Get("OverlayShowLabel");
+            ResetOverlayPositionButton.Content = Localization.Get("ResetOverlayPosition");
+            OpenOutputFolderButton.Content = Localization.Get("OpenOutputFolder");
+            CopyOutputPathButton.Content = Localization.Get("CopyOutputPath");
+            CopyStatusButton.Content = Localization.Get("CopyStatus");
             ((ComboBoxItem)OverlayTextShadowComboBox.Items[0]).Content = Localization.Get("TextShadowNone");
             ((ComboBoxItem)OverlayTextShadowComboBox.Items[1]).Content = Localization.Get("TextShadowSoft");
             ((ComboBoxItem)OverlayTextShadowComboBox.Items[2]).Content = Localization.Get("TextShadowStrong");
@@ -249,11 +273,16 @@ namespace DSDeaths.Live {
             LeftColumnPanel.Measure(new Size(LeftColumnPanel.ActualWidth, double.PositiveInfinity));
             RightColumnPanel.Measure(new Size(RightColumnPanel.ActualWidth, double.PositiveInfinity));
 
-            double difference = RightColumnPanel.DesiredSize.Height - LeftColumnPanel.DesiredSize.Height;
-            if (difference > 0.5) {
-                OverlayButton.Height = OverlayButton.DesiredSize.Height + difference;
-            } else if (difference < -0.5) {
-                SettingsPanelsGrid.Height = SettingsPanelsGrid.DesiredSize.Height - difference;
+            double leftGrowth = OverlayGeometry.AdditionalHeight(
+                LeftColumnPanel.DesiredSize.Height,
+                RightColumnPanel.DesiredSize.Height);
+            double rightGrowth = OverlayGeometry.AdditionalHeight(
+                RightColumnPanel.DesiredSize.Height,
+                LeftColumnPanel.DesiredSize.Height);
+            if (leftGrowth > 0.5) {
+                OverlayButton.Height = OverlayButton.DesiredSize.Height + leftGrowth;
+            } else if (rightGrowth > 0.5) {
+                SettingsPanelsGrid.Height = SettingsPanelsGrid.DesiredSize.Height + rightGrowth;
             }
         }
 
@@ -263,17 +292,19 @@ namespace DSDeaths.Live {
             }
 
             string error;
+            MonitorOperationErrorCode errorCode;
             bool enabled = OffsetEnabledCheckBox.IsChecked == true;
-            if (!monitor.TrySetOffsetEnabled(enabled, out error)) {
-                ShowError(error);
+            if (!monitor.TrySetOffsetEnabled(enabled, out error, out errorCode)) {
+                ShowError(MonitorOperationErrorFormatter.Format(errorCode, error));
                 ApplySnapshot(monitor.LatestSnapshot);
             }
         }
 
         private void SetCurrentZeroButton_Click(object sender, RoutedEventArgs e) {
             string error;
-            if (!monitor.TrySetCurrentAsZero(out error)) {
-                ShowError(error);
+            MonitorOperationErrorCode errorCode;
+            if (!monitor.TrySetCurrentAsZero(out error, out errorCode)) {
+                ShowError(MonitorOperationErrorFormatter.Format(errorCode, error));
                 return;
             }
             MonitorStatusText.Text = Localization.Get("CurrentZeroSuccess");
@@ -291,8 +322,9 @@ namespace DSDeaths.Live {
             }
 
             string error;
-            if (!monitor.TrySetOffset(offset, out error)) {
-                ShowError(error);
+            MonitorOperationErrorCode errorCode;
+            if (!monitor.TrySetOffset(offset, out error, out errorCode)) {
+                ShowError(MonitorOperationErrorFormatter.Format(errorCode, error));
                 return;
             }
             MonitorStatusText.Text = Localization.Get("BaselineSaved");
@@ -310,6 +342,7 @@ namespace DSDeaths.Live {
             if (overlayWindow == null) {
                 overlayWindow = new OverlayWindow();
                 overlayWindow.HideRequested += OverlayWindow_HideRequested;
+                overlayWindow.LocationChanged += OverlayWindow_LocationChanged;
                 overlayWindow.Closed += delegate { overlayWindow = null; };
             }
 
@@ -321,9 +354,19 @@ namespace DSDeaths.Live {
                 settings.OverlayFontSize,
                 settings.OverlayTextShadow,
                 settings.OverlayScalePercent);
+            ApplyOverlayBehavior();
             overlayWindow.UpdateDeathCount(
                 latestSnapshot != null && latestSnapshot.HasDeathCount ? latestSnapshot.DeathCount : 0);
-            overlayWindow.Show();
+            restoringOverlayPosition = true;
+            try {
+                overlayWindow.Show();
+                if (settings.OverlayPositionSet) {
+                    overlayWindow.RestorePosition(settings.OverlayLeft, settings.OverlayTop);
+                }
+            } finally {
+                restoringOverlayPosition = false;
+            }
+            SaveCurrentOverlayPosition();
             overlayWindow.Activate();
             settings.OverlayVisible = true;
             SaveSettings();
@@ -341,6 +384,26 @@ namespace DSDeaths.Live {
 
         private void OverlayWindow_HideRequested(object sender, EventArgs e) {
             HideOverlay();
+        }
+
+        private void OverlayWindow_LocationChanged(object sender, EventArgs e) {
+            if (restoringOverlayPosition || overlayWindow == null || !overlayWindow.IsLoaded) {
+                return;
+            }
+
+            SaveCurrentOverlayPosition();
+            ScheduleSettingsSave();
+        }
+
+        private void SaveCurrentOverlayPosition() {
+            if (overlayWindow == null || !overlayWindow.IsLoaded ||
+                double.IsNaN(overlayWindow.Left) || double.IsNaN(overlayWindow.Top)) {
+                return;
+            }
+
+            settings.OverlayPositionSet = true;
+            settings.OverlayLeft = overlayWindow.Left;
+            settings.OverlayTop = overlayWindow.Top;
         }
 
         private void UpdateOverlayButtonText() {
@@ -466,6 +529,58 @@ namespace DSDeaths.Live {
             SaveSettings();
         }
 
+        private void OverlayPositionLockedCheckBox_Click(object sender, RoutedEventArgs e) {
+            if (initializing) {
+                return;
+            }
+
+            settings.OverlayPositionLocked = OverlayPositionLockedCheckBox.IsChecked == true;
+            ApplyOverlayBehavior();
+            SaveSettings();
+        }
+
+        private void OverlayTopmostCheckBox_Click(object sender, RoutedEventArgs e) {
+            if (initializing) {
+                return;
+            }
+
+            settings.OverlayTopmost = OverlayTopmostCheckBox.IsChecked == true;
+            ApplyOverlayBehavior();
+            SaveSettings();
+        }
+
+        private void OverlayShowBorderCheckBox_Click(object sender, RoutedEventArgs e) {
+            if (initializing) {
+                return;
+            }
+
+            settings.OverlayShowBorder = OverlayShowBorderCheckBox.IsChecked == true;
+            ApplyOverlayBehavior();
+            SaveSettings();
+        }
+
+        private void OverlayShowLabelCheckBox_Click(object sender, RoutedEventArgs e) {
+            if (initializing) {
+                return;
+            }
+
+            settings.OverlayShowLabel = OverlayShowLabelCheckBox.IsChecked == true;
+            ApplyOverlayBehavior();
+            SaveSettings();
+        }
+
+        private void ResetOverlayPositionButton_Click(object sender, RoutedEventArgs e) {
+            ShowOverlay();
+            restoringOverlayPosition = true;
+            try {
+                overlayWindow.CenterOn(this);
+            } finally {
+                restoringOverlayPosition = false;
+            }
+            SaveCurrentOverlayPosition();
+            SaveSettings();
+        }
+
         private void ApplyOverlayAppearance() {
             OverlayScaleValueText.Text = Localization.Format(
                 "OverlayScaleValueFormat",
@@ -485,6 +600,78 @@ namespace DSDeaths.Live {
                     settings.OverlayFontSize,
                     settings.OverlayTextShadow,
                     settings.OverlayScalePercent);
+            }
+        }
+
+        private void ApplyOverlayBehavior() {
+            if (overlayWindow == null) {
+                return;
+            }
+
+            overlayWindow.ApplyBehavior(
+                settings.OverlayPositionLocked,
+                settings.OverlayShowBorder,
+                settings.OverlayShowLabel,
+                settings.OverlayTopmost);
+        }
+
+        private void OpenOutputFolderButton_Click(object sender, RoutedEventArgs e) {
+            try {
+                string directory = Path.GetDirectoryName(monitor.OutputPath);
+                Process.Start(new ProcessStartInfo {
+                    FileName = directory,
+                    UseShellExecute = true
+                });
+            } catch (Exception exception) when (
+                exception is InvalidOperationException ||
+                exception is Win32Exception ||
+                exception is IOException) {
+                ShowError(Localization.Format("OpenOutputFolderError", exception.Message));
+            }
+        }
+
+        private void CopyOutputPathButton_Click(object sender, RoutedEventArgs e) {
+            CopyText(monitor.OutputPath, "OutputPathCopied");
+        }
+
+        private void CopyStatusButton_Click(object sender, RoutedEventArgs e) {
+            CopyText(BuildDiagnosticSummary(), "StatusCopied");
+        }
+
+        private string BuildDiagnosticSummary() {
+            MonitorSnapshot snapshot = latestSnapshot;
+            string game = snapshot != null && snapshot.Game != null
+                ? snapshot.Game.DisplayName
+                : Localization.Get("NoGame");
+            string state = string.IsNullOrEmpty(ConnectionText.Text)
+                ? Localization.Get("Stopped")
+                : ConnectionText.Text;
+            return Localization.Format(
+                "DiagnosticSummary",
+                typeof(MainWindow).Assembly.GetName().Version,
+                game,
+                state,
+                MonitorStatusText.Text,
+                monitor.OutputPath,
+                DiagnosticLogger.LogPath);
+        }
+
+        private void CopyText(string text, string successKey) {
+            try {
+                Clipboard.SetText(text ?? string.Empty);
+                MonitorStatusText.Text = Localization.Get(successKey);
+                MonitorStatusDot.Fill = BrushFromHex("#42C77A");
+                transientStatusTimer.Stop();
+                transientStatusTimer.Start();
+            } catch (ExternalException exception) {
+                ShowError(Localization.Format("ClipboardError", exception.Message));
+            }
+        }
+
+        private void TransientStatusTimer_Tick(object sender, EventArgs e) {
+            transientStatusTimer.Stop();
+            if (latestSnapshot != null) {
+                ApplySnapshot(latestSnapshot);
             }
         }
 
@@ -591,6 +778,7 @@ namespace DSDeaths.Live {
         protected override void OnClosed(EventArgs e) {
             monitor.SnapshotChanged -= Monitor_SnapshotChanged;
             settingsSaveTimer.Stop();
+            transientStatusTimer.Stop();
             SaveSettings();
             if (overlayWindow != null) {
                 overlayWindow.Close();

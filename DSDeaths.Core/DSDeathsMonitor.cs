@@ -30,6 +30,14 @@ namespace DSDeaths {
         ReadMemoryFailed
     }
 
+    public enum MonitorOperationErrorCode {
+        None,
+        EldenRingNotConnected,
+        ValidEldenRingCountRequired,
+        InvalidZeroBaseline,
+        SettingsSaveFailed
+    }
+
     public sealed class MonitorSnapshot {
         internal MonitorSnapshot(
             MonitorState state,
@@ -153,8 +161,10 @@ namespace DSDeaths {
             this.settingsPath = settingsPath;
 
             string warning;
-            offsetSettings = EldenRingOffsetSettings.Load(settingsPath, out warning);
+            OffsetSettingsWarning[] warningDetails;
+            offsetSettings = EldenRingOffsetSettings.Load(settingsPath, out warning, out warningDetails);
             SettingsWarning = warning;
+            SettingsWarnings = warningDetails;
             latestSnapshot = CreateSnapshot(MonitorState.Stopped, null, false, false, 0, 0, null);
         }
 
@@ -169,6 +179,8 @@ namespace DSDeaths {
         }
 
         public string SettingsWarning { get; private set; }
+
+        public OffsetSettingsWarning[] SettingsWarnings { get; private set; }
 
         public MonitorSnapshot LatestSnapshot {
             get {
@@ -225,8 +237,17 @@ namespace DSDeaths {
         }
 
         public bool TrySetOffsetEnabled(bool enabled, out string error) {
+            MonitorOperationErrorCode ignored;
+            return TrySetOffsetEnabled(enabled, out error, out ignored);
+        }
+
+        public bool TrySetOffsetEnabled(
+            bool enabled,
+            out string error,
+            out MonitorOperationErrorCode errorCode) {
             if (!IsEldenRingConnected()) {
                 error = "Elden Ring is not currently connected.";
+                errorCode = MonitorOperationErrorCode.EldenRingNotConnected;
                 return false;
             }
 
@@ -235,11 +256,13 @@ namespace DSDeaths {
                 offsetSettings.Enabled = enabled;
                 if (!offsetSettings.TrySave(settingsPath, out error)) {
                     offsetSettings.Enabled = previous;
+                    errorCode = MonitorOperationErrorCode.SettingsSaveFailed;
                     return false;
                 }
                 forceRefresh = true;
             }
 
+            errorCode = MonitorOperationErrorCode.None;
             return true;
         }
 
@@ -251,22 +274,40 @@ namespace DSDeaths {
         }
 
         public bool TrySetCurrentAsZero(out string error) {
+            MonitorOperationErrorCode ignored;
+            return TrySetCurrentAsZero(out error, out ignored);
+        }
+
+        public bool TrySetCurrentAsZero(
+            out string error,
+            out MonitorOperationErrorCode errorCode) {
             MonitorSnapshot snapshot = LatestSnapshot;
             if (snapshot.Game == null || !snapshot.Game.IsEldenRing || !snapshot.HasDeathCount) {
                 error = "A valid Elden Ring death count is required before setting the zero baseline.";
+                errorCode = MonitorOperationErrorCode.ValidEldenRingCountRequired;
                 return false;
             }
 
-            return TrySetOffset(snapshot.RawDeathCount, out error);
+            return TrySetOffset(snapshot.RawDeathCount, out error, out errorCode);
         }
 
         public bool TrySetOffset(int offset, out string error) {
+            MonitorOperationErrorCode ignored;
+            return TrySetOffset(offset, out error, out ignored);
+        }
+
+        public bool TrySetOffset(
+            int offset,
+            out string error,
+            out MonitorOperationErrorCode errorCode) {
             if (offset < 0) {
                 error = "The zero baseline must be a non-negative Int32 value.";
+                errorCode = MonitorOperationErrorCode.InvalidZeroBaseline;
                 return false;
             }
             if (!IsEldenRingConnected()) {
                 error = "Elden Ring is not currently connected.";
+                errorCode = MonitorOperationErrorCode.EldenRingNotConnected;
                 return false;
             }
 
@@ -279,11 +320,13 @@ namespace DSDeaths {
                 if (!offsetSettings.TrySave(settingsPath, out error)) {
                     offsetSettings.Offset = previousOffset;
                     offsetSettings.Enabled = previousEnabled;
+                    errorCode = MonitorOperationErrorCode.SettingsSaveFailed;
                     return false;
                 }
                 forceRefresh = true;
             }
 
+            errorCode = MonitorOperationErrorCode.None;
             return true;
         }
 

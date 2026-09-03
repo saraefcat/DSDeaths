@@ -11,5 +11,6 @@
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net48" Version="1.0.3" PrivateAssets="all" />
     <ProjectReference Include="..\DSDeaths.Core\DSDeaths.Core.csproj" />
     <ProjectReference Include="..\DSDeaths.Live\DSDeaths.Live.csproj" />
+    <Reference Include="WindowsBase" />
   </ItemGroup>
 </Project>

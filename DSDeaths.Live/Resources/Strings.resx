@@ -75,4 +75,27 @@
   <data name="MonitorDetailUnsupportedVariant" xml:space="preserve"><value>This process variant cannot be monitored safely.</value></data>
   <data name="MonitorDetailNullPointer" xml:space="preserve"><value>The death-count pointer chain contained a null pointer.</value></data>
   <data name="MonitorDetailReadMemoryFailed" xml:space="preserve"><value>Could not read game memory: {0}</value></data>
+  <data name="OverlayPositionLocked" xml:space="preserve"><value>Lock position</value></data>
+  <data name="OverlayTopmost" xml:space="preserve"><value>Always on top</value></data>
+  <data name="OverlayShowBorder" xml:space="preserve"><value>Show border</value></data>
+  <data name="OverlayShowLabel" xml:space="preserve"><value>Show DEATHS label</value></data>
+  <data name="ResetOverlayPosition" xml:space="preserve"><value>Reset overlay position</value></data>
+  <data name="OpenOutputFolder" xml:space="preserve"><value>Open folder</value></data>
+  <data name="CopyOutputPath" xml:space="preserve"><value>Copy path</value></data>
+  <data name="CopyStatus" xml:space="preserve"><value>Copy details</value></data>
+  <data name="OutputPathCopied" xml:space="preserve"><value>The OBS output path was copied.</value></data>
+  <data name="StatusCopied" xml:space="preserve"><value>Diagnostic details were copied.</value></data>
+  <data name="OpenOutputFolderError" xml:space="preserve"><value>Could not open the OBS output folder: {0}</value></data>
+  <data name="ClipboardError" xml:space="preserve"><value>Could not copy to the clipboard: {0}</value></data>
+  <data name="DiagnosticSummary" xml:space="preserve"><value>DSDeaths Live version: {0}&#xA;Game: {1}&#xA;State: {2}&#xA;Status: {3}&#xA;OBS output: {4}&#xA;Diagnostic log: {5}</value></data>
+  <data name="UnhandledError" xml:space="preserve"><value>DSDeaths Live encountered an unexpected error and may need to close. Details were written to:&#xA;{0}</value></data>
+  <data name="OperationEldenRingNotConnected" xml:space="preserve"><value>Elden Ring is not currently connected.</value></data>
+  <data name="OperationValidEldenRingCountRequired" xml:space="preserve"><value>A valid Elden Ring death count is required before setting the zero baseline.</value></data>
+  <data name="OperationInvalidZeroBaseline" xml:space="preserve"><value>The zero baseline must be a non-negative whole number.</value></data>
+  <data name="OperationSettingsSaveFailed" xml:space="preserve"><value>Could not save the zero-baseline settings: {0}</value></data>
+  <data name="SettingsWarningMalformedLine" xml:space="preserve"><value>Ignored a malformed GUI settings line: {0}</value></data>
+  <data name="SettingsWarningInvalidValue" xml:space="preserve"><value>Ignored an invalid GUI setting ({0}): {1}</value></data>
+  <data name="SettingsWarningReadFailed" xml:space="preserve"><value>Could not read {0}: {1}</value></data>
+  <data name="OffsetWarningMalformedLine" xml:space="preserve"><value>Ignored a malformed zero-baseline settings line: {0}</value></data>
+  <data name="OffsetWarningInvalidValue" xml:space="preserve"><value>Ignored an invalid zero-baseline setting ({0}): {1}</value></data>
 </root>

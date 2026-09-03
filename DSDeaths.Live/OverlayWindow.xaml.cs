@@ -11,6 +11,7 @@ namespace DSDeaths.Live {
     public partial class OverlayWindow : Window {
         private const double BaseWidth = 430;
         private const double BaseHeight = 180;
+        private bool positionLocked;
 
         public OverlayWindow() {
             InitializeComponent();
@@ -67,15 +68,61 @@ namespace DSDeaths.Live {
 
             if (keepCenter) {
                 Rect workArea = GetCurrentMonitorWorkArea();
-                Left = Math.Max(workArea.Left, Math.Min(centerX - newWidth / 2.0, workArea.Right - newWidth));
-                Top = Math.Max(workArea.Top, Math.Min(centerY - newHeight / 2.0, workArea.Bottom - newHeight));
+                Point topLeft = OverlayGeometry.ClampTopLeft(
+                    workArea,
+                    new Size(newWidth, newHeight),
+                    new Point(centerX - newWidth / 2.0, centerY - newHeight / 2.0));
+                Left = topLeft.X;
+                Top = topLeft.Y;
             }
         }
 
+        public void ApplyBehavior(
+            bool locked,
+            bool showBorder,
+            bool showLabel,
+            bool topmost) {
+            positionLocked = locked;
+            OverlayBackgroundBorder.BorderBrush = showBorder
+                ? new SolidColorBrush(Color.FromArgb(0x80, 0xD5, 0xA8, 0x47))
+                : Brushes.Transparent;
+            OverlayDeathsLabel.Visibility = showLabel ? Visibility.Visible : Visibility.Collapsed;
+            Topmost = topmost;
+        }
+
+        public void RestorePosition(double left, double top) {
+            Rect workArea = GetCurrentMonitorWorkAreaAfterMove(left, top);
+            Point position = OverlayGeometry.ClampTopLeft(
+                workArea,
+                new Size(ActualWidth > 0 ? ActualWidth : Width, ActualHeight > 0 ? ActualHeight : Height),
+                new Point(left, top));
+            Left = position.X;
+            Top = position.Y;
+        }
+
+        public void CenterOn(Window referenceWindow) {
+            Rect workArea = GetMonitorWorkArea(referenceWindow);
+            Point position = OverlayGeometry.CenterTopLeft(
+                workArea,
+                new Size(ActualWidth > 0 ? ActualWidth : Width, ActualHeight > 0 ? ActualHeight : Height));
+            Left = position.X;
+            Top = position.Y;
+        }
+
         private Rect GetCurrentMonitorWorkArea() {
-            IntPtr handle = new WindowInteropHelper(this).Handle;
+            return GetMonitorWorkArea(this);
+        }
+
+        private Rect GetCurrentMonitorWorkAreaAfterMove(double left, double top) {
+            Left = left;
+            Top = top;
+            return GetMonitorWorkArea(this);
+        }
+
+        private static Rect GetMonitorWorkArea(Window window) {
+            IntPtr handle = new WindowInteropHelper(window).Handle;
             System.Drawing.Rectangle deviceArea = Forms.Screen.FromHandle(handle).WorkingArea;
-            PresentationSource source = PresentationSource.FromVisual(this);
+            PresentationSource source = PresentationSource.FromVisual(window);
             if (source == null || source.CompositionTarget == null) {
                 return new Rect(deviceArea.Left, deviceArea.Top, deviceArea.Width, deviceArea.Height);
             }
@@ -105,7 +152,7 @@ namespace DSDeaths.Live {
         }
 
         private void OverlayWindow_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) {
-            if (e.ButtonState == MouseButtonState.Pressed) {
+            if (!positionLocked && e.ButtonState == MouseButtonState.Pressed) {
                 DragMove();
             }
         }

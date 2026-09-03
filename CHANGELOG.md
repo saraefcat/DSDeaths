@@ -7,6 +7,13 @@
 - Corrected x64 process-memory interop types, kept overlay scaling on its
   current monitor, recalculated column heights after window resizing, and
   localized monitor details in the Japanese interface.
+- Added persistent overlay position, position locking/reset, border and label
+  visibility, always-on-top control, OBS path actions, diagnostic copying and
+  rotating logs, complete settings/offset error localization, and Per-Monitor
+  V2 DPI awareness to DSDeaths Live.
+- Added an offline `eldenring.exe` compatibility scanner for saved game
+  versions and Windows CI for solution builds and all scanner, offset,
+  signature, layout, localization, and settings checks.
 
 ## [1.2.0-rc1] - 2026-08-28
 

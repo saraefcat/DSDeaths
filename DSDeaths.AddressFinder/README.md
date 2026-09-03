@@ -6,11 +6,30 @@ runtime executable.
 
 ## Safety
 
-- Use only while Elden Ring is offline and Easy Anti-Cheat is disabled.
+- Live-process discovery, validation, and research modes must be used only while
+  Elden Ring is offline and Easy Anti-Cheat is disabled.
+- The offline executable compatibility check reads files only and does not
+  require the game to be running.
 - The tool opens `eldenring.exe` with `PROCESS_QUERY_INFORMATION | PROCESS_VM_READ`.
 - It uses `VirtualQueryEx` and `ReadProcessMemory` only.
 - It does not declare or call any process-memory write API.
 - It is x64-only.
+
+## Check saved game versions without starting them
+
+Run `Check-EldenRing-Backups.cmd` and enter the parent folder that contains the
+backups. The tool recursively finds every `eldenring.exe`, calculates its
+SHA-256 hash, scans executable PE sections, and requires exactly one focused
+death-count signature whose pointer target remains inside the image.
+
+The same check can be run directly against either one executable or a folder:
+
+```powershell
+.\DSDeaths.AddressFinder.exe --check-exe "D:\Elden Ring backups"
+```
+
+`PASS` is strong offline compatibility evidence, but it does not replace one
+in-game read test before release. The executable is never started or modified.
 
 ## Build
 

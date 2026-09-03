@@ -310,6 +310,21 @@ internal static class Program {
         Check(window != null && window.GetAttribute("Width") == "920" &&
               window.GetAttribute("Height") == "800",
             "main window keeps the compact initial dimensions");
+
+        XmlNode contentScrollViewer = document.SelectSingleNode(
+            "//*[@x:Name='ContentScrollViewer']",
+            namespaces);
+        XmlNode contentGrid = contentScrollViewer == null
+            ? null
+            : contentScrollViewer.SelectSingleNode("*[local-name()='Grid']");
+        Check(contentScrollViewer != null && contentScrollViewer.Attributes != null &&
+              contentScrollViewer.Attributes["VerticalScrollBarVisibility"] != null &&
+              contentScrollViewer.Attributes["VerticalScrollBarVisibility"].Value == "Auto",
+            "initial layout keeps scrolling available only when genuinely needed");
+        Check(contentGrid != null && contentGrid.Attributes != null &&
+              contentGrid.Attributes["Margin"] != null &&
+              contentGrid.Attributes["Margin"].Value == "24,12",
+            "initial content keeps the compact vertical margin");
     }
 
     private static void CheckGridCell(

@@ -18,6 +18,28 @@
   <data name="RawUnavailable" xml:space="preserve"><value>Raw count: —</value></data>
   <data name="EacWarningTitle" xml:space="preserve"><value>ELDEN RING SAFETY</value></data>
   <data name="EacWarningText" xml:space="preserve"><value>Use only offline with Easy Anti-Cheat disabled.</value></data>
+  <data name="OfflineLaunchText" xml:space="preserve"><value>Prepares the launch text file and starts the game directly. EAC status cannot be verified; use only offline.</value></data>
+  <data name="OfflineLaunchButton" xml:space="preserve"><value>Launch Elden Ring offline</value></data>
+  <data name="OfflineLaunchChoose" xml:space="preserve"><value>Location...</value></data>
+  <data name="OfflineLaunchChooseHint" xml:space="preserve"><value>Select or change the location of eldenring.exe.</value></data>
+  <data name="OfflineLaunchPathUnset" xml:space="preserve"><value>Select eldenring.exe on first launch.</value></data>
+  <data name="OfflineLaunchPathNotSet" xml:space="preserve"><value>Launch target: Not set</value></data>
+  <data name="OfflineLaunchPath" xml:space="preserve"><value>Launch target: {0}</value></data>
+  <data name="OfflineLaunchDialogTitle" xml:space="preserve"><value>Select the Elden Ring executable</value></data>
+  <data name="OfflineLaunchDialogFilter" xml:space="preserve"><value>Elden Ring executable (eldenring.exe)|eldenring.exe|Executable files (*.exe)|*.exe</value></data>
+  <data name="OfflineLaunchConfirmTitle" xml:space="preserve"><value>Launch Elden Ring offline</value></data>
+  <data name="OfflineLaunchConfirm" xml:space="preserve"><value>The following offline-launch preparation will be performed.&#xA;&#xA;Launch text file:&#xA;{0}&#xA;Content: {1}&#xA;&#xA;Executable:&#xA;{2}&#xA;&#xA;An existing launch text file with different content will not be overwritten. DSDeaths cannot verify EAC status; use only offline.&#xA;&#xA;Continue?</value></data>
+  <data name="OfflineLaunchWrongExecutable" xml:space="preserve"><value>Select eldenring.exe from the Elden Ring game folder.</value></data>
+  <data name="OfflineLaunchExecutableMissing" xml:space="preserve"><value>eldenring.exe was not found: {0}</value></data>
+  <data name="OfflineLaunchInvalidPath" xml:space="preserve"><value>The launch target is invalid: {0}</value></data>
+  <data name="OfflineLaunchAppIdConflict" xml:space="preserve"><value>{0} contains different data. It was not overwritten, and launch was cancelled.</value></data>
+  <data name="OfflineLaunchFileReadFailed" xml:space="preserve"><value>Could not read the launch text file: {0}</value></data>
+  <data name="OfflineLaunchFileWriteFailed" xml:space="preserve"><value>Could not create the launch text file: {0}</value></data>
+  <data name="OfflineLaunchProcessCheckFailed" xml:space="preserve"><value>Could not check whether Elden Ring is already running. Launch was cancelled: {0}</value></data>
+  <data name="OfflineLaunchAlreadyRunning" xml:space="preserve"><value>Elden Ring is already running. Close the game before using offline launch.</value></data>
+  <data name="OfflineLaunchStartFailed" xml:space="preserve"><value>Could not start Elden Ring: {0}</value></data>
+  <data name="OfflineLaunchStarted" xml:space="preserve"><value>Elden Ring offline launch was started.</value></data>
+  <data name="OfflineLaunchPathSaved" xml:space="preserve"><value>The Elden Ring launch target was saved.</value></data>
   <data name="OffsetTitle" xml:space="preserve"><value>Run offset</value></data>
   <data name="OffsetOnly" xml:space="preserve"><value>Elden Ring only</value></data>
   <data name="OffsetEnable" xml:space="preserve"><value>Enable zero baseline</value></data>

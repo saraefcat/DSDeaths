@@ -2,6 +2,11 @@
 
 ## [Unreleased]
 
+- Added an Elden Ring offline-launch helper to DSDeaths Live. It stores the
+  selected `eldenring.exe`, safely creates or validates `steam_appid.txt`,
+  displays the selected path, never overwrites conflicting content, prevents
+  duplicate launches, and starts the game directly after an explicit
+  offline-use confirmation.
 - Added configurable counter-text shadows to the DSDeaths Live overlay, with
   none, soft, and strong options.
 - Corrected x64 process-memory interop types, kept overlay scaling on its

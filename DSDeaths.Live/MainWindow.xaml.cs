@@ -19,6 +19,7 @@ namespace DSDeaths.Live {
         private readonly LiveSettingsWarning[] startupWarnings;
         private readonly DispatcherTimer settingsSaveTimer;
         private readonly DispatcherTimer transientStatusTimer;
+        private readonly DispatcherTimer offlineLaunchResetTimer;
         private Forms.NotifyIcon trayIcon;
         private System.Drawing.Icon trayAppIcon;
         private Forms.ToolStripMenuItem trayShowItem;
@@ -30,6 +31,7 @@ namespace DSDeaths.Live {
         private bool allowClose;
         private bool columnBalancePending;
         private bool restoringOverlayPosition;
+        private bool offlineLaunchPending;
 
         internal MainWindow(
             DSDeathsMonitor monitor,
@@ -50,6 +52,10 @@ namespace DSDeaths.Live {
                 Interval = TimeSpan.FromSeconds(2)
             };
             transientStatusTimer.Tick += TransientStatusTimer_Tick;
+            offlineLaunchResetTimer = new DispatcherTimer {
+                Interval = TimeSpan.FromSeconds(10)
+            };
+            offlineLaunchResetTimer.Tick += OfflineLaunchResetTimer_Tick;
             CreateTrayIcon();
             SelectConfiguredLanguage();
             PopulateFontFamilies();
@@ -114,7 +120,7 @@ namespace DSDeaths.Live {
                 ? Localization.Format("RawFormat", snapshot.RawDeathCount)
                 : Localization.Get("RawUnavailable");
 
-            EacWarning.Visibility = isEldenRing ? Visibility.Visible : Visibility.Collapsed;
+            UpdateEldenRingLaunchBanner(snapshot);
             OffsetPanel.IsEnabled = canEditOffset;
             OffsetOnlyBadge.Visibility = isEldenRing ? Visibility.Collapsed : Visibility.Visible;
 
@@ -184,8 +190,8 @@ namespace DSDeaths.Live {
             TitleText.Text = Localization.Get("AppTitle");
             SubtitleText.Text = Localization.Get("Subtitle");
             DeathsLabelText.Text = Localization.Get("DeathsLabel");
-            EacWarningTitleText.Text = Localization.Get("EacWarningTitle");
-            EacWarningBodyText.Text = Localization.Get("EacWarningText");
+            ChooseEldenRingExecutableButton.Content = Localization.Get("OfflineLaunchChoose");
+            LaunchEldenRingOfflineButton.Content = Localization.Get("OfflineLaunchButton");
             OffsetTitleText.Text = Localization.Get("OffsetTitle");
             OffsetOnlyText.Text = Localization.Get("OffsetOnly");
             OffsetEnabledCheckBox.Content = Localization.Get("OffsetEnable");
@@ -234,6 +240,7 @@ namespace DSDeaths.Live {
             }
 
             UpdateOverlayButtonText();
+            UpdateEldenRingLaunchBanner(latestSnapshot);
             ApplyOverlayAppearance();
             if (latestSnapshot != null) {
                 ApplySnapshot(latestSnapshot);
@@ -284,6 +291,211 @@ namespace DSDeaths.Live {
             } else if (rightGrowth > 0.5) {
                 SettingsPanelsGrid.Height = SettingsPanelsGrid.DesiredSize.Height + rightGrowth;
             }
+        }
+
+        private void UpdateEldenRingLaunchBanner(MonitorSnapshot snapshot) {
+            bool hasGame = snapshot != null && snapshot.Game != null;
+            bool isEldenRing = hasGame && snapshot.Game.IsEldenRing;
+            bool showLauncher = !hasGame;
+
+            EacWarning.Visibility = isEldenRing ? Visibility.Visible : Visibility.Collapsed;
+            EldenRingLaunchActions.Visibility = showLauncher
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+            HeaderStatusPanel.Visibility = showLauncher
+                ? Visibility.Collapsed
+                : Visibility.Visible;
+
+            EacWarningTitleText.Text = Localization.Get("EacWarningTitle");
+            EacWarningBodyText.Text = Localization.Get("EacWarningText");
+            EldenRingLaunchActions.ToolTip = Localization.Get("OfflineLaunchText");
+
+            LaunchEldenRingOfflineButton.IsEnabled = showLauncher && !offlineLaunchPending;
+            ChooseEldenRingExecutableButton.IsEnabled = showLauncher && !offlineLaunchPending;
+
+            string configuredPath = settings.EldenRingExecutablePath;
+            EldenRingExecutablePathText.Text = string.IsNullOrEmpty(configuredPath)
+                ? Localization.Get("OfflineLaunchPathNotSet")
+                : Localization.Format("OfflineLaunchPath", configuredPath);
+            EldenRingExecutablePathText.ToolTip = string.IsNullOrEmpty(configuredPath)
+                ? Localization.Get("OfflineLaunchPathUnset")
+                : Localization.Format("OfflineLaunchPath", configuredPath);
+            LaunchEldenRingOfflineButton.ToolTip = string.IsNullOrEmpty(configuredPath)
+                ? Localization.Get("OfflineLaunchPathUnset")
+                : Localization.Format("OfflineLaunchPath", configuredPath);
+            ChooseEldenRingExecutableButton.ToolTip = Localization.Get("OfflineLaunchChooseHint");
+        }
+
+        private void ChooseEldenRingExecutableButton_Click(object sender, RoutedEventArgs e) {
+            string selectedPath;
+            if (!TryChooseEldenRingExecutable(out selectedPath)) {
+                return;
+            }
+
+            settings.EldenRingExecutablePath = selectedPath;
+            if (!SaveSettings()) {
+                return;
+            }
+
+            UpdateEldenRingLaunchBanner(latestSnapshot);
+            ShowTransientStatus(Localization.Get("OfflineLaunchPathSaved"));
+        }
+
+        private void LaunchEldenRingOfflineButton_Click(object sender, RoutedEventArgs e) {
+            EldenRingOfflineLaunchErrorCode errorCode;
+            string error;
+            if (!EldenRingOfflineLauncher.TryEnsureGameNotRunning(
+                    out errorCode,
+                    out error)) {
+                ShowError(FormatOfflineLaunchError(errorCode, error));
+                return;
+            }
+
+            string executablePath = settings.EldenRingExecutablePath;
+            string normalizedPath;
+            if (!EldenRingOfflineLauncher.TryValidateExecutable(
+                    executablePath,
+                    out normalizedPath,
+                    out errorCode,
+                    out error)) {
+                if (!TryChooseEldenRingExecutable(out normalizedPath)) {
+                    return;
+                }
+                settings.EldenRingExecutablePath = normalizedPath;
+                if (!SaveSettings()) {
+                    return;
+                }
+            }
+
+            string appIdFilePath = Path.Combine(
+                Path.GetDirectoryName(normalizedPath),
+                EldenRingOfflineLauncher.AppIdFileName);
+            MessageBoxResult confirmation = MessageBox.Show(
+                this,
+                Localization.Format(
+                    "OfflineLaunchConfirm",
+                    appIdFilePath,
+                    EldenRingOfflineLauncher.SteamAppId,
+                    normalizedPath),
+                Localization.Get("OfflineLaunchConfirmTitle"),
+                MessageBoxButton.YesNo,
+                MessageBoxImage.Warning,
+                MessageBoxResult.No);
+            if (confirmation != MessageBoxResult.Yes) {
+                return;
+            }
+
+            EldenRingOfflineLaunchPreparation preparation;
+            if (!EldenRingOfflineLauncher.TryPrepare(
+                    normalizedPath,
+                    out preparation,
+                    out errorCode,
+                    out error)) {
+                ShowError(FormatOfflineLaunchError(errorCode, error));
+                return;
+            }
+
+            Process process;
+            if (!EldenRingOfflineLauncher.TryStart(
+                    preparation,
+                    out process,
+                    out errorCode,
+                    out error)) {
+                ShowError(FormatOfflineLaunchError(errorCode, error));
+                return;
+            }
+            if (process != null) {
+                process.Dispose();
+            }
+
+            offlineLaunchPending = true;
+            offlineLaunchResetTimer.Stop();
+            offlineLaunchResetTimer.Start();
+            UpdateEldenRingLaunchBanner(latestSnapshot);
+            DiagnosticLogger.Write(
+                "Elden Ring offline launch requested; steam_appid.txt=" +
+                (preparation.AppIdFileCreated ? "created" : "already-valid"));
+            ShowTransientStatus(Localization.Get("OfflineLaunchStarted"));
+        }
+
+        private bool TryChooseEldenRingExecutable(out string selectedPath) {
+            selectedPath = null;
+            var dialog = new Microsoft.Win32.OpenFileDialog {
+                Title = Localization.Get("OfflineLaunchDialogTitle"),
+                Filter = Localization.Get("OfflineLaunchDialogFilter"),
+                FileName = EldenRingOfflineLauncher.ExecutableFileName,
+                CheckFileExists = true,
+                Multiselect = false
+            };
+
+            string configuredPath = settings.EldenRingExecutablePath;
+            if (!string.IsNullOrEmpty(configuredPath)) {
+                try {
+                    string configuredDirectory = Path.GetDirectoryName(
+                        Path.GetFullPath(configuredPath));
+                    if (Directory.Exists(configuredDirectory)) {
+                        dialog.InitialDirectory = configuredDirectory;
+                    }
+                } catch (Exception exception) when (
+                    exception is ArgumentException ||
+                    exception is NotSupportedException ||
+                    exception is PathTooLongException ||
+                    exception is System.Security.SecurityException) {
+                }
+            } else {
+                string defaultPath = EldenRingOfflineLauncher.FindDefaultExecutablePath();
+                if (!string.IsNullOrEmpty(defaultPath)) {
+                    dialog.InitialDirectory = Path.GetDirectoryName(defaultPath);
+                }
+            }
+
+            if (dialog.ShowDialog(this) != true) {
+                return false;
+            }
+
+            EldenRingOfflineLaunchErrorCode errorCode;
+            string error;
+            if (!EldenRingOfflineLauncher.TryValidateExecutable(
+                    dialog.FileName,
+                    out selectedPath,
+                    out errorCode,
+                    out error)) {
+                ShowError(FormatOfflineLaunchError(errorCode, error));
+                selectedPath = null;
+                return false;
+            }
+            return true;
+        }
+
+        private static string FormatOfflineLaunchError(
+            EldenRingOfflineLaunchErrorCode errorCode,
+            string error) {
+            switch (errorCode) {
+                case EldenRingOfflineLaunchErrorCode.WrongExecutableName:
+                    return Localization.Get("OfflineLaunchWrongExecutable");
+                case EldenRingOfflineLaunchErrorCode.ExecutableNotFound:
+                    return Localization.Format("OfflineLaunchExecutableMissing", error);
+                case EldenRingOfflineLaunchErrorCode.AppIdFileConflict:
+                    return Localization.Format("OfflineLaunchAppIdConflict", error);
+                case EldenRingOfflineLaunchErrorCode.AppIdFileReadFailed:
+                    return Localization.Format("OfflineLaunchFileReadFailed", error);
+                case EldenRingOfflineLaunchErrorCode.AppIdFileWriteFailed:
+                    return Localization.Format("OfflineLaunchFileWriteFailed", error);
+                case EldenRingOfflineLaunchErrorCode.ProcessCheckFailed:
+                    return Localization.Format("OfflineLaunchProcessCheckFailed", error);
+                case EldenRingOfflineLaunchErrorCode.AlreadyRunning:
+                    return Localization.Get("OfflineLaunchAlreadyRunning");
+                case EldenRingOfflineLaunchErrorCode.ProcessStartFailed:
+                    return Localization.Format("OfflineLaunchStartFailed", error);
+                default:
+                    return Localization.Format("OfflineLaunchInvalidPath", error);
+            }
+        }
+
+        private void OfflineLaunchResetTimer_Tick(object sender, EventArgs e) {
+            offlineLaunchResetTimer.Stop();
+            offlineLaunchPending = false;
+            UpdateEldenRingLaunchBanner(latestSnapshot);
         }
 
         private void OffsetEnabledCheckBox_Click(object sender, RoutedEventArgs e) {
@@ -659,13 +871,17 @@ namespace DSDeaths.Live {
         private void CopyText(string text, string successKey) {
             try {
                 Clipboard.SetText(text ?? string.Empty);
-                MonitorStatusText.Text = Localization.Get(successKey);
-                MonitorStatusDot.Fill = BrushFromHex("#42C77A");
-                transientStatusTimer.Stop();
-                transientStatusTimer.Start();
+                ShowTransientStatus(Localization.Get(successKey));
             } catch (ExternalException exception) {
                 ShowError(Localization.Format("ClipboardError", exception.Message));
             }
+        }
+
+        private void ShowTransientStatus(string message) {
+            MonitorStatusText.Text = message;
+            MonitorStatusDot.Fill = BrushFromHex("#42C77A");
+            transientStatusTimer.Stop();
+            transientStatusTimer.Start();
         }
 
         private void TransientStatusTimer_Tick(object sender, EventArgs e) {
@@ -779,6 +995,7 @@ namespace DSDeaths.Live {
             monitor.SnapshotChanged -= Monitor_SnapshotChanged;
             settingsSaveTimer.Stop();
             transientStatusTimer.Stop();
+            offlineLaunchResetTimer.Stop();
             SaveSettings();
             if (overlayWindow != null) {
                 overlayWindow.Close();
@@ -796,13 +1013,15 @@ namespace DSDeaths.Live {
             base.OnClosed(e);
         }
 
-        private void SaveSettings() {
+        private bool SaveSettings() {
             settingsSaveTimer.Stop();
             string error;
             if (!settings.TrySave(settingsPath, out error)) {
                 MonitorStatusText.Text = Localization.Format("SettingsSaveError", error);
                 MonitorStatusDot.Fill = BrushFromHex("#E05B5B");
+                return false;
             }
+            return true;
         }
 
         private void ShowError(string message) {

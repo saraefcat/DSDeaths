@@ -1,4 +1,6 @@
 using System;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.IO;
 using System.Reflection;
 using System.Windows;
@@ -20,6 +22,7 @@ internal static class Program {
         TestLocalizedSettingsWarnings();
         TestLocalizationResourceParity();
         TestOverlayAppearanceGridAlignment();
+        TestEldenRingOfflineLauncher();
         TestDpiConfiguration();
 
         if (failures == 0) {
@@ -50,6 +53,8 @@ internal static class Program {
         Check(settings.OverlayShowBorder, "overlay border is shown by default");
         Check(settings.OverlayShowLabel, "overlay label is shown by default");
         Check(settings.OverlayTopmost, "overlay is topmost by default");
+        Check(settings.EldenRingExecutablePath == string.Empty,
+            "Elden Ring launch target is unset by default");
         Check(warning == null, "missing settings file has no warning");
     }
 
@@ -75,7 +80,8 @@ internal static class Program {
                 OverlayPositionLocked = true,
                 OverlayShowBorder = false,
                 OverlayShowLabel = false,
-                OverlayTopmost = false
+                OverlayTopmost = false,
+                EldenRingExecutablePath = @"D:\Games\ELDEN RING\Game\eldenring.exe"
             };
             string error;
             Check(original.TrySave(path, out error), "GUI settings are saved");
@@ -99,6 +105,9 @@ internal static class Program {
             Check(!restored.OverlayShowBorder, "saved overlay border setting is restored");
             Check(!restored.OverlayShowLabel, "saved overlay label setting is restored");
             Check(!restored.OverlayTopmost, "saved overlay topmost setting is restored");
+            Check(
+                restored.EldenRingExecutablePath == @"D:\Games\ELDEN RING\Game\eldenring.exe",
+                "saved Elden Ring launch target is restored");
             Check(warning == null, "valid GUI settings have no warning");
         } finally {
             Directory.Delete(directory, true);
@@ -124,7 +133,8 @@ internal static class Program {
                 "OverlayPositionLocked=perhaps",
                 "OverlayShowBorder=perhaps",
                 "OverlayShowLabel=perhaps",
-                "OverlayTopmost=perhaps"
+                "OverlayTopmost=perhaps",
+                "EldenRingExecutablePath=" + new string('x', 2049)
             });
 
             string warning;
@@ -145,6 +155,8 @@ internal static class Program {
             Check(settings.OverlayShowBorder, "invalid border setting keeps the default");
             Check(settings.OverlayShowLabel, "invalid label setting keeps the default");
             Check(settings.OverlayTopmost, "invalid topmost setting keeps the default");
+            Check(settings.EldenRingExecutablePath == string.Empty,
+                "invalid Elden Ring launch target keeps the default");
             Check(!string.IsNullOrEmpty(warning), "invalid GUI settings produce a warning");
         } finally {
             if (File.Exists(path)) {
@@ -325,6 +337,166 @@ internal static class Program {
               contentGrid.Attributes["Margin"] != null &&
               contentGrid.Attributes["Margin"].Value == "24,12",
             "initial content keeps the compact vertical margin");
+
+        Check(
+            document.SelectSingleNode(
+                "//*[@x:Name='LaunchEldenRingOfflineButton']",
+                namespaces) != null,
+            "offline launch button exists in the header");
+        Check(
+            document.SelectSingleNode(
+                "//*[@x:Name='ChooseEldenRingExecutableButton']",
+                namespaces) != null,
+            "offline launch target button exists in the header");
+        XmlNode launchPathText = document.SelectSingleNode(
+            "//*[@x:Name='EldenRingExecutablePathText']",
+            namespaces);
+        Check(launchPathText != null,
+            "offline launch target path exists below the header buttons");
+        Check(launchPathText != null && launchPathText.Attributes != null &&
+              launchPathText.Attributes["TextTrimming"] != null &&
+              launchPathText.Attributes["TextTrimming"].Value == "CharacterEllipsis",
+            "long offline launch target paths are trimmed in the header");
+    }
+
+    private static void TestEldenRingOfflineLauncher() {
+        string directory = Path.Combine(
+            Path.GetTempPath(),
+            "DSDeaths.Live.OfflineLauncher-" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(directory);
+        string executablePath = Path.Combine(
+            directory,
+            EldenRingOfflineLauncher.ExecutableFileName);
+        string appIdPath = Path.Combine(
+            directory,
+            EldenRingOfflineLauncher.AppIdFileName);
+
+        try {
+            File.WriteAllBytes(executablePath, new byte[] { 0 });
+
+            EldenRingOfflineLaunchPreparation preparation;
+            EldenRingOfflineLaunchErrorCode errorCode;
+            string error;
+            Check(
+                EldenRingOfflineLauncher.TryPrepare(
+                    executablePath,
+                    out preparation,
+                    out errorCode,
+                    out error),
+                "offline launch preparation succeeds for eldenring.exe");
+            Check(preparation != null && preparation.AppIdFileCreated,
+                "offline launch preparation creates steam_appid.txt");
+            Check(File.ReadAllText(appIdPath).Trim() == EldenRingOfflineLauncher.SteamAppId,
+                "offline launch file contains the Elden Ring Steam app ID");
+
+            Localization.SetLanguage("ja");
+            string japaneseConfirmation = Localization.Format(
+                "OfflineLaunchConfirm",
+                appIdPath,
+                EldenRingOfflineLauncher.SteamAppId,
+                executablePath);
+            Check(japaneseConfirmation.Contains(EldenRingOfflineLauncher.SteamAppId),
+                "Japanese offline launch confirmation shows the exact Steam app ID");
+            Check(
+                Localization.Get("OfflineLaunchAlreadyRunning").Contains("すでに起動"),
+                "Japanese duplicate-launch error is localized");
+            Check(Localization.Get("OfflineLaunchPathNotSet") == "起動先: 未設定",
+                "Japanese unset launch target is localized");
+
+            Localization.SetLanguage("en");
+            string englishConfirmation = Localization.Format(
+                "OfflineLaunchConfirm",
+                appIdPath,
+                EldenRingOfflineLauncher.SteamAppId,
+                executablePath);
+            Check(englishConfirmation.Contains(EldenRingOfflineLauncher.SteamAppId),
+                "English offline launch confirmation shows the exact Steam app ID");
+            Check(
+                Localization.Get("OfflineLaunchAlreadyRunning").Contains("already running"),
+                "English duplicate-launch error is localized");
+            Check(Localization.Get("OfflineLaunchPathNotSet") == "Launch target: Not set",
+                "English unset launch target is localized");
+
+            string requestedProcessName = null;
+            Check(
+                EldenRingOfflineLauncher.TryEnsureGameNotRunning(
+                    delegate(string processName) {
+                        requestedProcessName = processName;
+                        return new Process[0];
+                    },
+                    out errorCode,
+                    out error) &&
+                requestedProcessName == "eldenring",
+                "offline launcher checks for the Elden Ring process by name");
+
+            Check(
+                !EldenRingOfflineLauncher.TryEnsureGameNotRunning(
+                    delegate(string ignored) {
+                        return new[] { Process.GetCurrentProcess() };
+                    },
+                    out errorCode,
+                    out error) &&
+                errorCode == EldenRingOfflineLaunchErrorCode.AlreadyRunning,
+                "offline launcher rejects a duplicate game process");
+
+            Check(
+                !EldenRingOfflineLauncher.TryEnsureGameNotRunning(
+                    delegate(string ignored) {
+                        throw new Win32Exception("process check denied");
+                    },
+                    out errorCode,
+                    out error) &&
+                errorCode == EldenRingOfflineLaunchErrorCode.ProcessCheckFailed &&
+                error == "process check denied",
+                "offline launcher fails closed when process state cannot be checked");
+
+            Check(
+                EldenRingOfflineLauncher.TryPrepare(
+                    executablePath,
+                    out preparation,
+                    out errorCode,
+                    out error),
+                "matching offline launch file is accepted");
+            Check(preparation != null && !preparation.AppIdFileCreated,
+                "matching offline launch file is not rewritten");
+
+            File.WriteAllText(appIdPath, "different-content");
+            Check(
+                !EldenRingOfflineLauncher.TryPrepare(
+                    executablePath,
+                    out preparation,
+                    out errorCode,
+                    out error) &&
+                errorCode == EldenRingOfflineLaunchErrorCode.AppIdFileConflict,
+                "conflicting offline launch file stops preparation");
+            Check(File.ReadAllText(appIdPath) == "different-content",
+                "conflicting offline launch file is not overwritten");
+
+            string wrongExecutable = Path.Combine(directory, "other.exe");
+            File.WriteAllBytes(wrongExecutable, new byte[] { 0 });
+            string normalizedPath;
+            Check(
+                !EldenRingOfflineLauncher.TryValidateExecutable(
+                    wrongExecutable,
+                    out normalizedPath,
+                    out errorCode,
+                    out error) &&
+                errorCode == EldenRingOfflineLaunchErrorCode.WrongExecutableName,
+                "offline launcher rejects an executable with the wrong name");
+
+            File.Delete(executablePath);
+            Check(
+                !EldenRingOfflineLauncher.TryValidateExecutable(
+                    executablePath,
+                    out normalizedPath,
+                    out errorCode,
+                    out error) &&
+                errorCode == EldenRingOfflineLaunchErrorCode.ExecutableNotFound,
+                "offline launcher rejects a missing eldenring.exe");
+        } finally {
+            Localization.SetLanguage("auto");
+            Directory.Delete(directory, true);
+        }
     }
 
     private static void CheckGridCell(

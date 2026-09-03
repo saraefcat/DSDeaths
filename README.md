@@ -54,6 +54,31 @@ Signature safety checks:
 - It accepts exactly one match only when the resolved target is inside `eldenring.exe`.
 - It does not fall back to a known-version RVA.
 
+### Offline launch from DSDeaths Live
+
+When no game is running, use **Launch Elden Ring offline** at the top of the window.
+
+First use:
+
+1. Select the game's `eldenring.exe` with **Location...**.
+2. Verify the text-file and executable paths in the confirmation.
+3. Select **Yes** to prepare the launch and start `eldenring.exe` directly.
+
+Launch behavior:
+
+- The selected path is stored in `DSDeaths.Live.settings.ini`.
+- The selected path is shown below the launch controls; hover over it to see the full path.
+- If `steam_appid.txt` is absent, it is created with the Elden Ring Steam App ID
+  `1245620`.
+- An existing file with matching content is reused.
+- An existing file with different content is not overwritten, and launch stops.
+- Launch stops if Elden Ring is already running or its process state cannot be checked.
+- Game executables and save files are not modified.
+
+`steam_appid.txt` remains in the game folder and can be removed manually after
+the game exits. DSDeaths cannot verify EAC status, so always use this feature
+offline.
+
 ## Usage
 
 Choose one interface and double-click its executable:

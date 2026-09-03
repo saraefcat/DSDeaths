@@ -40,6 +40,7 @@ namespace DSDeaths.Live {
             OverlayShowBorder = true;
             OverlayShowLabel = true;
             OverlayTopmost = true;
+            EldenRingExecutablePath = string.Empty;
         }
 
         public string Language { get; set; }
@@ -58,6 +59,7 @@ namespace DSDeaths.Live {
         public bool OverlayShowBorder { get; set; }
         public bool OverlayShowLabel { get; set; }
         public bool OverlayTopmost { get; set; }
+        public string EldenRingExecutablePath { get; set; }
 
         public static LiveSettings Load(string path, out string warning) {
             LiveSettingsWarning[] ignored;
@@ -216,6 +218,12 @@ namespace DSDeaths.Live {
                         } else {
                             AddInvalidValueWarning(warnings, details, "OverlayTopmost", value);
                         }
+                    } else if (key.Equals("EldenRingExecutablePath", StringComparison.OrdinalIgnoreCase)) {
+                        if (IsExecutablePathSetting(value)) {
+                            settings.EldenRingExecutablePath = value;
+                        } else {
+                            AddInvalidValueWarning(warnings, details, "EldenRingExecutablePath", value);
+                        }
                     }
                 }
             } catch (IOException exception) {
@@ -265,7 +273,8 @@ namespace DSDeaths.Live {
                 "OverlayPositionLocked=" + OverlayPositionLocked.ToString(CultureInfo.InvariantCulture).ToLowerInvariant(),
                 "OverlayShowBorder=" + OverlayShowBorder.ToString(CultureInfo.InvariantCulture).ToLowerInvariant(),
                 "OverlayShowLabel=" + OverlayShowLabel.ToString(CultureInfo.InvariantCulture).ToLowerInvariant(),
-                "OverlayTopmost=" + OverlayTopmost.ToString(CultureInfo.InvariantCulture).ToLowerInvariant()
+                "OverlayTopmost=" + OverlayTopmost.ToString(CultureInfo.InvariantCulture).ToLowerInvariant(),
+                "EldenRingExecutablePath=" + (EldenRingExecutablePath ?? string.Empty)
             };
 
             try {
@@ -327,6 +336,11 @@ namespace DSDeaths.Live {
             return value.Equals("none", StringComparison.OrdinalIgnoreCase) ||
                    value.Equals("soft", StringComparison.OrdinalIgnoreCase) ||
                    value.Equals("strong", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static bool IsExecutablePathSetting(string value) {
+            return value != null && value.Length <= 2048 &&
+                   value.IndexOf('\0') < 0 && value.IndexOf('\r') < 0 && value.IndexOf('\n') < 0;
         }
 
         private static bool TryParseCoordinate(string value, out double coordinate) {

@@ -18,6 +18,28 @@
   <data name="RawUnavailable" xml:space="preserve"><value>累計値: —</value></data>
   <data name="EacWarningTitle" xml:space="preserve"><value>ELDEN RING の安全上の注意</value></data>
   <data name="EacWarningText" xml:space="preserve"><value>Easy Anti-Cheatを無効にし、オフラインでのみ使用してください。</value></data>
+  <data name="OfflineLaunchText" xml:space="preserve"><value>起動用テキストを準備して直接起動します。EAC無効状態は検証できないため、必ずオフラインで使用してください。</value></data>
+  <data name="OfflineLaunchButton" xml:space="preserve"><value>Elden Ringをオフライン起動</value></data>
+  <data name="OfflineLaunchChoose" xml:space="preserve"><value>起動先...</value></data>
+  <data name="OfflineLaunchChooseHint" xml:space="preserve"><value>eldenring.exeの場所を選択または変更します。</value></data>
+  <data name="OfflineLaunchPathUnset" xml:space="preserve"><value>初回起動時にeldenring.exeを選択します。</value></data>
+  <data name="OfflineLaunchPathNotSet" xml:space="preserve"><value>起動先: 未設定</value></data>
+  <data name="OfflineLaunchPath" xml:space="preserve"><value>起動先: {0}</value></data>
+  <data name="OfflineLaunchDialogTitle" xml:space="preserve"><value>Elden Ringの実行ファイルを選択</value></data>
+  <data name="OfflineLaunchDialogFilter" xml:space="preserve"><value>Elden Ring実行ファイル (eldenring.exe)|eldenring.exe|実行ファイル (*.exe)|*.exe</value></data>
+  <data name="OfflineLaunchConfirmTitle" xml:space="preserve"><value>Elden Ringをオフライン起動</value></data>
+  <data name="OfflineLaunchConfirm" xml:space="preserve"><value>次のオフライン起動準備を行います。&#xA;&#xA;起動用テキスト:&#xA;{0}&#xA;内容: {1}&#xA;&#xA;実行ファイル:&#xA;{2}&#xA;&#xA;既存の起動用テキストの内容が異なる場合は上書きしません。DSDeathsはEAC無効状態を検証できないため、必ずオフラインで使用してください。&#xA;&#xA;続行しますか？</value></data>
+  <data name="OfflineLaunchWrongExecutable" xml:space="preserve"><value>Elden Ringのゲームフォルダーにあるeldenring.exeを選択してください。</value></data>
+  <data name="OfflineLaunchExecutableMissing" xml:space="preserve"><value>eldenring.exeが見つかりません: {0}</value></data>
+  <data name="OfflineLaunchInvalidPath" xml:space="preserve"><value>起動先が正しくありません: {0}</value></data>
+  <data name="OfflineLaunchAppIdConflict" xml:space="preserve"><value>{0}には別の内容が保存されています。安全のため上書きせず、起動を中止しました。</value></data>
+  <data name="OfflineLaunchFileReadFailed" xml:space="preserve"><value>起動用テキストを読み取れませんでした: {0}</value></data>
+  <data name="OfflineLaunchFileWriteFailed" xml:space="preserve"><value>起動用テキストを作成できませんでした: {0}</value></data>
+  <data name="OfflineLaunchProcessCheckFailed" xml:space="preserve"><value>Elden Ringが起動中か確認できなかったため、起動を中止しました: {0}</value></data>
+  <data name="OfflineLaunchAlreadyRunning" xml:space="preserve"><value>Elden Ringはすでに起動しています。ゲームを終了してからオフライン起動を使用してください。</value></data>
+  <data name="OfflineLaunchStartFailed" xml:space="preserve"><value>Elden Ringを起動できませんでした: {0}</value></data>
+  <data name="OfflineLaunchStarted" xml:space="preserve"><value>Elden Ringのオフライン起動を開始しました。</value></data>
+  <data name="OfflineLaunchPathSaved" xml:space="preserve"><value>Elden Ringの起動先を保存しました。</value></data>
   <data name="OffsetTitle" xml:space="preserve"><value>周回オフセット</value></data>
   <data name="OffsetOnly" xml:space="preserve"><value>Elden Ring専用</value></data>
   <data name="OffsetEnable" xml:space="preserve"><value>ゼロ基準を有効にする</value></data>

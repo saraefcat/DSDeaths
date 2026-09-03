@@ -235,19 +235,35 @@ namespace DSDeaths.Live {
 
         private void BalanceColumnHeights() {
             if (!IsLoaded || LeftColumnPanel.DesiredSize.Height <= 0 ||
-                RightColumnPanel.DesiredSize.Height <= 0) {
+                RightColumnPanel.DesiredSize.Height <= 0 ||
+                SettingsPanelsGrid.DesiredSize.Height <= 0) {
                 return;
             }
 
             double leftWithoutOverlayButton =
                 LeftColumnPanel.DesiredSize.Height - OverlayButton.DesiredSize.Height;
+            double rightWithoutSettingsPanels =
+                RightColumnPanel.DesiredSize.Height - SettingsPanelsGrid.DesiredSize.Height;
+            double naturalSettingsPanelsHeight = Math.Max(
+                DisplaySettingsPanel.DesiredSize.Height,
+                ApplicationSettingsPanel.DesiredSize.Height);
+            double targetColumnHeight = Math.Max(
+                leftWithoutOverlayButton + OverlayButton.MinHeight,
+                rightWithoutSettingsPanels + naturalSettingsPanelsHeight);
             double targetButtonHeight = Math.Max(
                 OverlayButton.MinHeight,
-                RightColumnPanel.DesiredSize.Height - leftWithoutOverlayButton);
+                targetColumnHeight - leftWithoutOverlayButton);
+            double targetSettingsPanelsHeight = Math.Max(
+                naturalSettingsPanelsHeight,
+                targetColumnHeight - rightWithoutSettingsPanels);
 
             if (double.IsNaN(OverlayButton.Height) ||
                 Math.Abs(OverlayButton.Height - targetButtonHeight) > 0.5) {
                 OverlayButton.Height = targetButtonHeight;
+            }
+            if (double.IsNaN(SettingsPanelsGrid.Height) ||
+                Math.Abs(SettingsPanelsGrid.Height - targetSettingsPanelsHeight) > 0.5) {
+                SettingsPanelsGrid.Height = targetSettingsPanelsHeight;
             }
         }
 

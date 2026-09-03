@@ -96,7 +96,11 @@ text-output status is grouped directly below the Elden Ring run-offset panel.
 Hover over the bottom status line to read an untruncated message, or use
 **Copy details** to copy the app version, game, state, status, output path, and
 diagnostic-log path. The log is rotated at 1 MiB, intentionally omits death
-counts and per-death history, and never accesses save files.
+counts and per-death history, and never accesses save files. Rotation keeps the
+current `DSDeaths.Live.log` and at most one `DSDeaths.Live.log.previous`, so no
+routine log maintenance is required. Both files can be safely deleted after
+closing DSDeaths Live; the current log is created again automatically when
+needed.
 
 The **Close button behavior** setting in the separate Application panel selects
 whether the window's close button stores DSDeaths Live in the notification area

@@ -56,6 +56,7 @@ namespace DSDeaths.Live {
 
             monitor.SnapshotChanged += Monitor_SnapshotChanged;
             Loaded += MainWindow_Loaded;
+            SizeChanged += MainWindow_SizeChanged;
             initializing = false;
         }
 
@@ -87,6 +88,7 @@ namespace DSDeaths.Live {
             bool hasGame = snapshot.Game != null;
             bool isEldenRing = hasGame && snapshot.Game.IsEldenRing;
             bool canEditOffset = isEldenRing && snapshot.State == MonitorState.Monitoring;
+            string monitorMessage = MonitorMessageFormatter.Format(snapshot);
 
             GameText.Text = hasGame ? snapshot.Game.DisplayName : Localization.Get("NoGame");
             DeathCountText.Text = snapshot.HasDeathCount
@@ -131,19 +133,17 @@ namespace DSDeaths.Live {
                 case MonitorState.Monitoring:
                     ConnectionText.Text = Localization.Format(
                         "Monitoring", snapshot.Game.DisplayName, snapshot.Is64Bit ? 64 : 32);
-                    MonitorStatusText.Text = string.IsNullOrEmpty(snapshot.Message)
-                        ? ConnectionText.Text
-                        : ConnectionText.Text + " · " + snapshot.Message;
+                    MonitorStatusText.Text = AppendMessage(ConnectionText.Text, monitorMessage);
                     MonitorStatusDot.Fill = BrushFromHex("#42C77A");
                     break;
                 case MonitorState.Unsupported:
                     ConnectionText.Text = Localization.Get("Unsupported");
-                    MonitorStatusText.Text = AppendMessage(ConnectionText.Text, snapshot.Message);
+                    MonitorStatusText.Text = AppendMessage(ConnectionText.Text, monitorMessage);
                     MonitorStatusDot.Fill = BrushFromHex("#E05B5B");
                     break;
                 case MonitorState.Error:
                     ConnectionText.Text = Localization.Get("MonitorError");
-                    MonitorStatusText.Text = AppendMessage(ConnectionText.Text, snapshot.Message);
+                    MonitorStatusText.Text = AppendMessage(ConnectionText.Text, monitorMessage);
                     MonitorStatusDot.Fill = BrushFromHex("#E05B5B");
                     break;
                 case MonitorState.Stopped:
@@ -233,37 +233,27 @@ namespace DSDeaths.Live {
                 }));
         }
 
+        private void MainWindow_SizeChanged(object sender, SizeChangedEventArgs e) {
+            ScheduleColumnBalance();
+        }
+
         private void BalanceColumnHeights() {
             if (!IsLoaded || LeftColumnPanel.DesiredSize.Height <= 0 ||
                 RightColumnPanel.DesiredSize.Height <= 0 ||
-                SettingsPanelsGrid.DesiredSize.Height <= 0) {
+                LeftColumnPanel.ActualWidth <= 0 || RightColumnPanel.ActualWidth <= 0) {
                 return;
             }
 
-            double leftWithoutOverlayButton =
-                LeftColumnPanel.DesiredSize.Height - OverlayButton.DesiredSize.Height;
-            double rightWithoutSettingsPanels =
-                RightColumnPanel.DesiredSize.Height - SettingsPanelsGrid.DesiredSize.Height;
-            double naturalSettingsPanelsHeight = Math.Max(
-                DisplaySettingsPanel.DesiredSize.Height,
-                ApplicationSettingsPanel.DesiredSize.Height);
-            double targetColumnHeight = Math.Max(
-                leftWithoutOverlayButton + OverlayButton.MinHeight,
-                rightWithoutSettingsPanels + naturalSettingsPanelsHeight);
-            double targetButtonHeight = Math.Max(
-                OverlayButton.MinHeight,
-                targetColumnHeight - leftWithoutOverlayButton);
-            double targetSettingsPanelsHeight = Math.Max(
-                naturalSettingsPanelsHeight,
-                targetColumnHeight - rightWithoutSettingsPanels);
+            OverlayButton.ClearValue(FrameworkElement.HeightProperty);
+            SettingsPanelsGrid.ClearValue(FrameworkElement.HeightProperty);
+            LeftColumnPanel.Measure(new Size(LeftColumnPanel.ActualWidth, double.PositiveInfinity));
+            RightColumnPanel.Measure(new Size(RightColumnPanel.ActualWidth, double.PositiveInfinity));
 
-            if (double.IsNaN(OverlayButton.Height) ||
-                Math.Abs(OverlayButton.Height - targetButtonHeight) > 0.5) {
-                OverlayButton.Height = targetButtonHeight;
-            }
-            if (double.IsNaN(SettingsPanelsGrid.Height) ||
-                Math.Abs(SettingsPanelsGrid.Height - targetSettingsPanelsHeight) > 0.5) {
-                SettingsPanelsGrid.Height = targetSettingsPanelsHeight;
+            double difference = RightColumnPanel.DesiredSize.Height - LeftColumnPanel.DesiredSize.Height;
+            if (difference > 0.5) {
+                OverlayButton.Height = OverlayButton.DesiredSize.Height + difference;
+            } else if (difference < -0.5) {
+                SettingsPanelsGrid.Height = SettingsPanelsGrid.DesiredSize.Height - difference;
             }
         }
 

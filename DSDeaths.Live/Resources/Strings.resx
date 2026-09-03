@@ -65,4 +65,14 @@
   <data name="TrayShow" xml:space="preserve"><value>Show DSDeaths Live</value></data>
   <data name="TrayExit" xml:space="preserve"><value>Exit</value></data>
   <data name="ClampedWarning" xml:space="preserve"><value>The raw count is below the saved baseline, so the displayed count is clamped to 0.</value></data>
+  <data name="MonitorDetailUnexpectedFailure" xml:space="preserve"><value>The monitor stopped unexpectedly: {0}</value></data>
+  <data name="MonitorDetailOpenProcessFailed" xml:space="preserve"><value>Could not open the game process for read-only access: {0}</value></data>
+  <data name="MonitorDetailInspectModuleFailed" xml:space="preserve"><value>Could not inspect the game module: {0}</value></data>
+  <data name="MonitorDetailArchitectureFailed" xml:space="preserve"><value>Could not determine the game process architecture: {0}</value></data>
+  <data name="MonitorDetailEldenRingRequires64Bit" xml:space="preserve"><value>Elden Ring must be a 64-bit process.</value></data>
+  <data name="MonitorDetailSignatureResolved" xml:space="preserve"><value>Signature resolved uniquely (getter RVA 0x{0}, pointer RVA 0x{1}).</value></data>
+  <data name="MonitorDetailSignatureResolutionFailed" xml:space="preserve"><value>Could not safely resolve the Elden Ring death counter. This game version is not supported.</value></data>
+  <data name="MonitorDetailUnsupportedVariant" xml:space="preserve"><value>This process variant cannot be monitored safely.</value></data>
+  <data name="MonitorDetailNullPointer" xml:space="preserve"><value>The death-count pointer chain contained a null pointer.</value></data>
+  <data name="MonitorDetailReadMemoryFailed" xml:space="preserve"><value>Could not read game memory: {0}</value></data>
 </root>

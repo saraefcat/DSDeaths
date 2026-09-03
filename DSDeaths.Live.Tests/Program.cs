@@ -1,5 +1,7 @@
 using System;
 using System.IO;
+using System.Reflection;
+using DSDeaths;
 using DSDeaths.Live;
 
 internal static class Program {
@@ -9,13 +11,15 @@ internal static class Program {
         TestDefaults();
         TestRoundTrip();
         TestInvalidValues();
+        TestReadProcessMemorySignatures();
+        TestLocalizedMonitorMessages();
 
         if (failures == 0) {
-            Console.WriteLine("All DSDeaths Live settings tests passed.");
+            Console.WriteLine("All DSDeaths Live tests passed.");
             return 0;
         }
 
-        Console.Error.WriteLine(failures + " DSDeaths Live settings test(s) failed.");
+        Console.Error.WriteLine(failures + " DSDeaths Live test(s) failed.");
         return 1;
     }
 
@@ -106,6 +110,65 @@ internal static class Program {
                 File.Delete(path);
             }
         }
+    }
+
+    private static void TestReadProcessMemorySignatures() {
+        CheckReadProcessMemorySignature(typeof(DSDeathsMonitor), "monitor");
+        CheckReadProcessMemorySignature(typeof(EldenRingSignatureResolver), "signature resolver");
+    }
+
+    private static void CheckReadProcessMemorySignature(Type owner, string name) {
+        MethodInfo method = owner.GetMethod(
+            "ReadProcessMemory",
+            BindingFlags.NonPublic | BindingFlags.Static);
+        Check(method != null, name + " declares ReadProcessMemory");
+        if (method == null) {
+            return;
+        }
+
+        ParameterInfo[] parameters = method.GetParameters();
+        Check(parameters.Length == 5, name + " ReadProcessMemory has five parameters");
+        if (parameters.Length != 5) {
+            return;
+        }
+
+        Check(parameters[3].ParameterType == typeof(UIntPtr),
+            name + " uses pointer-width nSize");
+        Check(parameters[4].ParameterType == typeof(UIntPtr).MakeByRefType() && parameters[4].IsOut,
+            name + " uses pointer-width bytesRead output");
+    }
+
+    private static void TestLocalizedMonitorMessages() {
+        Localization.SetLanguage("ja");
+        string japanese = MonitorMessageFormatter.Format(
+            MonitorMessageCode.SignatureResolved,
+            "fallback",
+            "00000011",
+            "00000022");
+        Check(
+            japanese == "シグネチャを一意に解決しました（getter RVA 0x00000011、pointer RVA 0x00000022）。",
+            "signature success detail is localized in Japanese");
+        Check(
+            MonitorMessageFormatter.Format(
+                MonitorMessageCode.SignatureResolutionFailed,
+                "English diagnostic",
+                null,
+                null) ==
+            "Elden Ringのデスカウンターを安全に解決できませんでした。このゲームバージョンには対応していません。",
+            "signature failure detail is localized in Japanese");
+
+        Localization.SetLanguage("en");
+        string english = MonitorMessageFormatter.Format(
+            MonitorMessageCode.ReadMemoryFailed,
+            "fallback",
+            "Access denied",
+            null);
+        Check(english == "Could not read game memory: Access denied",
+            "monitor detail is localized in English");
+        Check(
+            MonitorMessageFormatter.Format(MonitorMessageCode.None, "fallback", null, null) == "fallback",
+            "unstructured monitor detail keeps its fallback text");
+        Localization.SetLanguage("auto");
     }
 
     private static void Check(bool condition, string name) {

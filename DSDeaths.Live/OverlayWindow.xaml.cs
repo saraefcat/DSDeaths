@@ -2,8 +2,10 @@ using System;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Effects;
+using Forms = System.Windows.Forms;
 
 namespace DSDeaths.Live {
     public partial class OverlayWindow : Window {
@@ -64,10 +66,24 @@ namespace DSDeaths.Live {
             Height = newHeight;
 
             if (keepCenter) {
-                Rect workArea = SystemParameters.WorkArea;
+                Rect workArea = GetCurrentMonitorWorkArea();
                 Left = Math.Max(workArea.Left, Math.Min(centerX - newWidth / 2.0, workArea.Right - newWidth));
                 Top = Math.Max(workArea.Top, Math.Min(centerY - newHeight / 2.0, workArea.Bottom - newHeight));
             }
+        }
+
+        private Rect GetCurrentMonitorWorkArea() {
+            IntPtr handle = new WindowInteropHelper(this).Handle;
+            System.Drawing.Rectangle deviceArea = Forms.Screen.FromHandle(handle).WorkingArea;
+            PresentationSource source = PresentationSource.FromVisual(this);
+            if (source == null || source.CompositionTarget == null) {
+                return new Rect(deviceArea.Left, deviceArea.Top, deviceArea.Width, deviceArea.Height);
+            }
+
+            Matrix fromDevice = source.CompositionTarget.TransformFromDevice;
+            Point topLeft = fromDevice.Transform(new Point(deviceArea.Left, deviceArea.Top));
+            Point bottomRight = fromDevice.Transform(new Point(deviceArea.Right, deviceArea.Bottom));
+            return new Rect(topLeft, bottomRight);
         }
 
         private static DropShadowEffect CreateTextShadow(string textShadow) {

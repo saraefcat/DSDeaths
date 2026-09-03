@@ -65,4 +65,14 @@
   <data name="TrayShow" xml:space="preserve"><value>DSDeaths Liveを表示</value></data>
   <data name="TrayExit" xml:space="preserve"><value>終了</value></data>
   <data name="ClampedWarning" xml:space="preserve"><value>累計値が保存済みの基準値より小さいため、表示値を0にしています。</value></data>
+  <data name="MonitorDetailUnexpectedFailure" xml:space="preserve"><value>監視が予期せず停止しました: {0}</value></data>
+  <data name="MonitorDetailOpenProcessFailed" xml:space="preserve"><value>ゲームプロセスを読み取り専用で開けませんでした: {0}</value></data>
+  <data name="MonitorDetailInspectModuleFailed" xml:space="preserve"><value>ゲームモジュールを確認できませんでした: {0}</value></data>
+  <data name="MonitorDetailArchitectureFailed" xml:space="preserve"><value>ゲームプロセスのアーキテクチャを判定できませんでした: {0}</value></data>
+  <data name="MonitorDetailEldenRingRequires64Bit" xml:space="preserve"><value>Elden Ringは64ビットプロセスである必要があります。</value></data>
+  <data name="MonitorDetailSignatureResolved" xml:space="preserve"><value>シグネチャを一意に解決しました（getter RVA 0x{0}、pointer RVA 0x{1}）。</value></data>
+  <data name="MonitorDetailSignatureResolutionFailed" xml:space="preserve"><value>Elden Ringのデスカウンターを安全に解決できませんでした。このゲームバージョンには対応していません。</value></data>
+  <data name="MonitorDetailUnsupportedVariant" xml:space="preserve"><value>このプロセス形式は安全に監視できません。</value></data>
+  <data name="MonitorDetailNullPointer" xml:space="preserve"><value>デスカウンターのポインターチェーンにnullポインターが含まれています。</value></data>
+  <data name="MonitorDetailReadMemoryFailed" xml:space="preserve"><value>ゲームメモリを読み取れませんでした: {0}</value></data>
 </root>

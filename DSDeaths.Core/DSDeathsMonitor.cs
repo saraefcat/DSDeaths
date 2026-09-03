@@ -16,6 +16,20 @@ namespace DSDeaths {
         Error
     }
 
+    public enum MonitorMessageCode {
+        None,
+        UnexpectedFailure,
+        OpenProcessFailed,
+        InspectModuleFailed,
+        ArchitectureDetectionFailed,
+        EldenRingRequires64Bit,
+        SignatureResolved,
+        SignatureResolutionFailed,
+        UnsupportedVariant,
+        NullPointer,
+        ReadMemoryFailed
+    }
+
     public sealed class MonitorSnapshot {
         internal MonitorSnapshot(
             MonitorState state,
@@ -28,7 +42,10 @@ namespace DSDeaths {
             int offset,
             bool outputWriteSucceeded,
             string outputError,
-            string message) {
+            string message,
+            MonitorMessageCode messageCode,
+            string messageArgument0,
+            string messageArgument1) {
             State = state;
             Game = game;
             Is64Bit = is64Bit;
@@ -40,6 +57,9 @@ namespace DSDeaths {
             OutputWriteSucceeded = outputWriteSucceeded;
             OutputError = outputError;
             Message = message;
+            MessageCode = messageCode;
+            MessageArgument0 = messageArgument0;
+            MessageArgument1 = messageArgument1;
         }
 
         public MonitorState State { get; private set; }
@@ -53,6 +73,9 @@ namespace DSDeaths {
         public bool OutputWriteSucceeded { get; private set; }
         public string OutputError { get; private set; }
         public string Message { get; private set; }
+        public MonitorMessageCode MessageCode { get; private set; }
+        public string MessageArgument0 { get; private set; }
+        public string MessageArgument1 { get; private set; }
 
         internal bool IsEquivalentTo(MonitorSnapshot other) {
             return other != null &&
@@ -66,7 +89,10 @@ namespace DSDeaths {
                    Offset == other.Offset &&
                    OutputWriteSucceeded == other.OutputWriteSucceeded &&
                    string.Equals(OutputError, other.OutputError, StringComparison.Ordinal) &&
-                   string.Equals(Message, other.Message, StringComparison.Ordinal);
+                   string.Equals(Message, other.Message, StringComparison.Ordinal) &&
+                   MessageCode == other.MessageCode &&
+                   string.Equals(MessageArgument0, other.MessageArgument0, StringComparison.Ordinal) &&
+                   string.Equals(MessageArgument1, other.MessageArgument1, StringComparison.Ordinal);
         }
     }
 
@@ -109,8 +135,8 @@ namespace DSDeaths {
             IntPtr process,
             IntPtr baseAddress,
             byte[] buffer,
-            int size,
-            ref int bytesRead);
+            UIntPtr size,
+            out UIntPtr bytesRead);
 
         [DllImport("kernel32.dll", SetLastError = true)]
         private static extern bool CloseHandle(IntPtr handle);
@@ -302,7 +328,9 @@ namespace DSDeaths {
                     false,
                     0,
                     0,
-                    "The monitor stopped unexpectedly: " + exception.Message));
+                    "The monitor stopped unexpectedly: " + exception.Message,
+                    MonitorMessageCode.UnexpectedFailure,
+                    exception.Message));
             } finally {
                 lock (sync) {
                     if (ReferenceEquals(worker, Thread.CurrentThread)) {
@@ -343,6 +371,7 @@ namespace DSDeaths {
                 false,
                 process.Id);
             if (handle == IntPtr.Zero) {
+                string errorDetail = DescribeLastWin32Error();
                 Publish(CreateSnapshot(
                     MonitorState.Error,
                     game,
@@ -350,7 +379,9 @@ namespace DSDeaths {
                     false,
                     0,
                     0,
-                    "Could not open the game process for read-only access. " + DescribeLastWin32Error()));
+                    "Could not open the game process for read-only access. " + errorDetail,
+                    MonitorMessageCode.OpenProcessFailed,
+                    errorDetail));
                 return;
             }
 
@@ -366,12 +397,15 @@ namespace DSDeaths {
                         false,
                         0,
                         0,
-                        "Could not inspect the game module: " + exception.Message));
+                        "Could not inspect the game module: " + exception.Message,
+                        MonitorMessageCode.InspectModuleFailed,
+                        exception.Message));
                     return;
                 }
 
                 bool isWow64 = false;
                 if (!IsWow64Process(handle, ref isWow64)) {
+                    string errorDetail = DescribeLastWin32Error();
                     Publish(CreateSnapshot(
                         MonitorState.Error,
                         game,
@@ -379,18 +413,24 @@ namespace DSDeaths {
                         false,
                         0,
                         0,
-                        "Could not determine the game process architecture. " + DescribeLastWin32Error()));
+                        "Could not determine the game process architecture. " + errorDetail,
+                        MonitorMessageCode.ArchitectureDetectionFailed,
+                        errorDetail));
                     return;
                 }
 
                 bool is64Bit = !isWow64;
                 int[] offsets = is64Bit ? game.Offsets64 : game.Offsets32;
                 string resolutionMessage = null;
+                MonitorMessageCode resolutionMessageCode = MonitorMessageCode.None;
+                string resolutionMessageArgument0 = null;
+                string resolutionMessageArgument1 = null;
 
                 if (game.IsEldenRing) {
                     if (!is64Bit) {
                         offsets = null;
                         resolutionMessage = "Elden Ring must be a 64-bit process.";
+                        resolutionMessageCode = MonitorMessageCode.EldenRingRequires64Bit;
                     } else {
                         int resolvedRva;
                         long signatureAddress;
@@ -404,19 +444,28 @@ namespace DSDeaths {
                                 out resolutionError)) {
                             offsets = new[] {resolvedRva, EldenRingSignature.FieldOffset};
                             long signatureRva = signatureAddress - module.BaseAddress.ToInt64();
+                            resolutionMessageArgument0 = signatureRva.ToString("X8", CultureInfo.InvariantCulture);
+                            resolutionMessageArgument1 = resolvedRva.ToString("X8", CultureInfo.InvariantCulture);
                             resolutionMessage =
                                 "Signature resolved uniquely (getter RVA 0x" +
-                                signatureRva.ToString("X8", CultureInfo.InvariantCulture) +
+                                resolutionMessageArgument0 +
                                 ", pointer RVA 0x" +
-                                resolvedRva.ToString("X8", CultureInfo.InvariantCulture) + ").";
+                                resolutionMessageArgument1 + ").";
+                            resolutionMessageCode = MonitorMessageCode.SignatureResolved;
                         } else {
                             offsets = null;
                             resolutionMessage = resolutionError;
+                            resolutionMessageCode = MonitorMessageCode.SignatureResolutionFailed;
                         }
                     }
                 }
 
                 if (offsets == null) {
+                    string unsupportedMessage =
+                        resolutionMessage ?? "This process variant cannot be monitored safely.";
+                    MonitorMessageCode unsupportedMessageCode = resolutionMessageCode == MonitorMessageCode.None
+                        ? MonitorMessageCode.UnsupportedVariant
+                        : resolutionMessageCode;
                     Publish(CreateSnapshot(
                         MonitorState.Unsupported,
                         game,
@@ -424,12 +473,25 @@ namespace DSDeaths {
                         false,
                         0,
                         0,
-                        resolutionMessage ?? "This process variant cannot be monitored safely."));
+                        unsupportedMessage,
+                        unsupportedMessageCode,
+                        resolutionMessageArgument0,
+                        resolutionMessageArgument1));
                     WaitForProcessExit(process);
                     return;
                 }
 
-                MonitorDeathCount(process, handle, module.BaseAddress, game, is64Bit, offsets, resolutionMessage);
+                MonitorDeathCount(
+                    process,
+                    handle,
+                    module.BaseAddress,
+                    game,
+                    is64Bit,
+                    offsets,
+                    resolutionMessage,
+                    resolutionMessageCode,
+                    resolutionMessageArgument0,
+                    resolutionMessageArgument1);
             } finally {
                 CloseHandle(handle);
             }
@@ -442,13 +504,26 @@ namespace DSDeaths {
             GameDefinition game,
             bool is64Bit,
             int[] offsets,
-            string initialMessage) {
+            string initialMessage,
+            MonitorMessageCode initialMessageCode,
+            string initialMessageArgument0,
+            string initialMessageArgument1) {
             int rawValue = 0;
             bool firstRead = true;
 
             while (!stopSignal.WaitOne(0) && !HasExited(process)) {
                 string readError;
-                if (!TryReadDeathCount(handle, moduleBase, is64Bit, offsets, out rawValue, out readError)) {
+                MonitorMessageCode readMessageCode;
+                string readMessageArgument0;
+                if (!TryReadDeathCount(
+                        handle,
+                        moduleBase,
+                        is64Bit,
+                        offsets,
+                        out rawValue,
+                        out readError,
+                        out readMessageCode,
+                        out readMessageArgument0)) {
                     Publish(CreateSnapshot(
                         MonitorState.Error,
                         game,
@@ -456,7 +531,9 @@ namespace DSDeaths {
                         false,
                         0,
                         0,
-                        readError));
+                        readError,
+                        readMessageCode,
+                        readMessageArgument0));
                 } else {
                     int outputValue = ApplyOffset(game, rawValue);
                     TryWriteOutput(outputValue, forceRefresh);
@@ -468,7 +545,10 @@ namespace DSDeaths {
                         true,
                         rawValue,
                         outputValue,
-                        firstRead ? initialMessage : null));
+                        firstRead ? initialMessage : null,
+                        firstRead ? initialMessageCode : MonitorMessageCode.None,
+                        firstRead ? initialMessageArgument0 : null,
+                        firstRead ? initialMessageArgument1 : null));
                     firstRead = false;
                 }
 
@@ -497,7 +577,9 @@ namespace DSDeaths {
             bool is64Bit,
             int[] offsets,
             out int value,
-            out string error) {
+            out string error,
+            out MonitorMessageCode messageCode,
+            out string messageArgument0) {
             long address = moduleBase.ToInt64();
             byte[] buffer = new byte[8];
 
@@ -505,21 +587,26 @@ namespace DSDeaths {
                 if (address == 0) {
                     value = 0;
                     error = "The death-count pointer chain contained a null pointer.";
+                    messageCode = MonitorMessageCode.NullPointer;
+                    messageArgument0 = null;
                     return false;
                 }
 
                 address += offset;
-                int bytesRead = 0;
                 int requestedSize = is64Bit ? 8 : 4;
+                UIntPtr bytesRead;
                 if (!ReadProcessMemory(
                         handle,
                         new IntPtr(address),
                         buffer,
-                        requestedSize,
-                        ref bytesRead) ||
-                    bytesRead != requestedSize) {
+                        new UIntPtr((uint)requestedSize),
+                        out bytesRead) ||
+                    bytesRead.ToUInt64() != (ulong)requestedSize) {
+                    string errorDetail = DescribeLastWin32Error();
                     value = 0;
-                    error = "Could not read game memory. " + DescribeLastWin32Error();
+                    error = "Could not read game memory. " + errorDetail;
+                    messageCode = MonitorMessageCode.ReadMemoryFailed;
+                    messageArgument0 = errorDetail;
                     return false;
                 }
 
@@ -528,6 +615,8 @@ namespace DSDeaths {
 
             value = unchecked((int)address);
             error = null;
+            messageCode = MonitorMessageCode.None;
+            messageArgument0 = null;
             return true;
         }
 
@@ -575,7 +664,10 @@ namespace DSDeaths {
             bool hasDeathCount,
             int rawValue,
             int outputValue,
-            string message) {
+            string message,
+            MonitorMessageCode messageCode = MonitorMessageCode.None,
+            string messageArgument0 = null,
+            string messageArgument1 = null) {
             lock (sync) {
                 return new MonitorSnapshot(
                     state,
@@ -588,7 +680,10 @@ namespace DSDeaths {
                     offsetSettings.Offset,
                     outputWriteSucceeded,
                     outputError,
-                    message);
+                    message,
+                    messageCode,
+                    messageArgument0,
+                    messageArgument1);
             }
         }
 

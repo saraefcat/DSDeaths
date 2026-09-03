@@ -4,6 +4,9 @@
 
 - Added configurable counter-text shadows to the DSDeaths Live overlay, with
   none, soft, and strong options.
+- Corrected x64 process-memory interop types, kept overlay scaling on its
+  current monitor, recalculated column heights after window resizing, and
+  localized monitor details in the Japanese interface.
 
 ## [1.2.0-rc1] - 2026-08-28
 

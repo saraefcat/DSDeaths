@@ -1,5 +1,7 @@
 # DSDeaths
 
+**English** | [日本語](README.ja.md)
+
 Community-maintained fork of [quidrex/DSDeaths](https://github.com/quidrex/DSDeaths).
 Version 1.2.0-rc1 adds fail-closed Elden Ring signature resolution verified on
 App Ver. 1.16 and 1.17, a persistent run offset, and expanded read-only

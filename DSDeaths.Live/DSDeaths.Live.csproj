@@ -14,7 +14,7 @@
     <ApplicationIcon>Assets\DSDeaths.Live.ico</ApplicationIcon>
     <AssemblyVersion>1.2.0.0</AssemblyVersion>
     <FileVersion>1.2.0.0</FileVersion>
-    <Version>1.2.0-rc1</Version>
+    <Version>1.2.0-rc2</Version>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net48" Version="1.0.3" PrivateAssets="all" />

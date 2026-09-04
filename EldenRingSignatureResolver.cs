@@ -4,7 +4,7 @@ using System.ComponentModel;
 using System.Runtime.InteropServices;
 
 namespace DSDeaths {
-    internal static class EldenRingSignatureResolver {
+    public static class EldenRingSignatureResolver {
         private const uint MemCommit = 0x1000;
         private const uint PageExecute = 0x10;
         private const uint PageExecuteRead = 0x20;
@@ -39,10 +39,10 @@ namespace DSDeaths {
             IntPtr process,
             IntPtr baseAddress,
             byte[] buffer,
-            int size,
-            ref int bytesRead);
+            UIntPtr size,
+            out UIntPtr bytesRead);
 
-        internal static bool TryResolve(
+        public static bool TryResolve(
             IntPtr process,
             IntPtr moduleBase,
             int moduleSize,
@@ -147,14 +147,14 @@ namespace DSDeaths {
             }
 
             byte[] pointerStorage = new byte[sizeof(long)];
-            int bytesRead = 0;
+            UIntPtr bytesRead;
             if (!ReadProcessMemory(
                     process,
                     new IntPtr(match.PointerStorageAddress),
                     pointerStorage,
-                    pointerStorage.Length,
-                    ref bytesRead) ||
-                bytesRead != pointerStorage.Length) {
+                    new UIntPtr((uint)pointerStorage.Length),
+                    out bytesRead) ||
+                bytesRead.ToUInt64() != (ulong)pointerStorage.Length) {
                 int errorCode = Marshal.GetLastWin32Error();
                 error = "The resolved pointer storage could not be read: " + DescribeWin32Error(errorCode);
                 return false;
@@ -181,15 +181,15 @@ namespace DSDeaths {
                     uniqueEnd + EldenRingSignature.PatternLength - 1);
                 int readLength = checked((int)(readEnd - uniqueStart));
                 var buffer = new byte[readLength];
-                int bytesRead = 0;
+                UIntPtr bytesRead;
 
                 if (!ReadProcessMemory(
                         process,
                         new IntPtr(uniqueStart),
                         buffer,
-                        readLength,
-                        ref bytesRead) ||
-                    bytesRead != readLength) {
+                        new UIntPtr((uint)readLength),
+                        out bytesRead) ||
+                    bytesRead.ToUInt64() != (ulong)readLength) {
                     int errorCode = Marshal.GetLastWin32Error();
                     error = "Could not scan executable game memory at 0x" +
                             uniqueStart.ToString("X16") + ": " + DescribeWin32Error(errorCode);

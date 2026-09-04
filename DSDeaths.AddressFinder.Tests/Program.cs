@@ -17,6 +17,10 @@ internal static class AddressFinderTestsProgram
         TestSignatureWildcardsOnlyTargetDisplacement();
         TestDirectDeathCountGetter();
         TestDirectDeathCountGetterRejectsWrongOffset();
+        TestExecutableSignatureScan();
+        TestExecutableSignatureRequiresUniqueMatch();
+        TestExecutableSignatureRejectsOutsideImage();
+        TestExecutableSignatureRejectsPartiallyMappedPattern();
 
         if (_failures == 0)
         {
@@ -179,6 +183,100 @@ internal static class AddressFinderTestsProgram
             0x94);
 
         AssertEqual("direct getter rejects a different field offset", 0, getters.Count);
+    }
+
+    private static void TestExecutableSignatureScan()
+    {
+        byte[] executable = CreatePeImage(0x2500);
+        ExecutableSignatureScanResult result = EldenRingExecutableSignatureScanner.Scan(executable);
+
+        AssertTrue("offline executable scan accepts one x64 match", result.IsCompatible);
+        AssertEqual("offline executable getter RVA", 0x1020UL, result.Matches[0].InstructionRva);
+        AssertEqual("offline executable pointer RVA", 0x2500UL, result.Matches[0].PointerStorageRva);
+    }
+
+    private static void TestExecutableSignatureRequiresUniqueMatch()
+    {
+        byte[] executable = CreatePeImage(0x2500);
+        WriteDirectGetter(executable, 0x200, 0x1000, 0x60, 0x2600);
+        ExecutableSignatureScanResult result = EldenRingExecutableSignatureScanner.Scan(executable);
+
+        AssertEqual("offline executable scan reports duplicate matches", 2, result.Matches.Count);
+        AssertTrue("offline executable duplicate match is not compatible", !result.IsCompatible);
+    }
+
+    private static void TestExecutableSignatureRejectsOutsideImage()
+    {
+        byte[] executable = CreatePeImage(0x4000);
+        ExecutableSignatureScanResult result = EldenRingExecutableSignatureScanner.Scan(executable);
+
+        AssertEqual("offline executable scan rejects an out-of-image target", 0, result.Matches.Count);
+        AssertTrue("offline executable out-of-image target is not compatible", !result.IsCompatible);
+    }
+
+    private static void TestExecutableSignatureRejectsPartiallyMappedPattern()
+    {
+        byte[] executable = CreatePeImage(0x1000);
+        const int optionalHeaderOffset = 0x84 + 20;
+        BinaryPrimitives.WriteUInt32LittleEndian(
+            executable.AsSpan(optionalHeaderOffset + 56, 4),
+            0x1028);
+        ExecutableSignatureScanResult result = EldenRingExecutableSignatureScanner.Scan(executable);
+
+        AssertEqual("offline executable scan rejects a partially mapped signature", 0, result.Matches.Count);
+        AssertTrue("offline executable partially mapped signature is not compatible", !result.IsCompatible);
+    }
+
+    private static byte[] CreatePeImage(ulong pointerStorageRva)
+    {
+        var bytes = new byte[0x600];
+        bytes[0] = (byte)'M';
+        bytes[1] = (byte)'Z';
+        BinaryPrimitives.WriteInt32LittleEndian(bytes.AsSpan(0x3C, 4), 0x80);
+        bytes[0x80] = (byte)'P';
+        bytes[0x81] = (byte)'E';
+
+        const int coff = 0x84;
+        BinaryPrimitives.WriteUInt16LittleEndian(bytes.AsSpan(coff, 2), 0x8664);
+        BinaryPrimitives.WriteUInt16LittleEndian(bytes.AsSpan(coff + 2, 2), 1);
+        BinaryPrimitives.WriteUInt16LittleEndian(bytes.AsSpan(coff + 16, 2), 0xF0);
+
+        const int optional = coff + 20;
+        BinaryPrimitives.WriteUInt16LittleEndian(bytes.AsSpan(optional, 2), 0x20B);
+        BinaryPrimitives.WriteUInt32LittleEndian(bytes.AsSpan(optional + 56, 4), 0x3000);
+
+        const int section = optional + 0xF0;
+        BinaryPrimitives.WriteUInt32LittleEndian(bytes.AsSpan(section + 8, 4), 0x200);
+        BinaryPrimitives.WriteUInt32LittleEndian(bytes.AsSpan(section + 12, 4), 0x1000);
+        BinaryPrimitives.WriteUInt32LittleEndian(bytes.AsSpan(section + 16, 4), 0x200);
+        BinaryPrimitives.WriteUInt32LittleEndian(bytes.AsSpan(section + 20, 4), 0x200);
+        BinaryPrimitives.WriteUInt32LittleEndian(bytes.AsSpan(section + 36, 4), 0x20000020);
+
+        WriteDirectGetter(bytes, 0x200, 0x1000, 0x20, pointerStorageRva);
+        return bytes;
+    }
+
+    private static void WriteDirectGetter(
+        byte[] fileBytes,
+        int rawSectionOffset,
+        ulong sectionRva,
+        int instructionOffset,
+        ulong pointerStorageRva)
+    {
+        int index = rawSectionOffset + instructionOffset;
+        fileBytes[index] = 0x48;
+        fileBytes[index + 1] = 0x8B;
+        fileBytes[index + 2] = 0x05;
+        ulong nextInstruction = sectionRva + (ulong)instructionOffset + 7;
+        BinaryPrimitives.WriteInt32LittleEndian(
+            fileBytes.AsSpan(index + 3, 4),
+            checked((int)((long)pointerStorageRva - (long)nextInstruction)));
+        new byte[]
+        {
+            0x48, 0x85, 0xC0, 0x74, 0x07,
+            0x8B, 0x80, 0x94, 0x00, 0x00, 0x00,
+            0xC3, 0xC3
+        }.CopyTo(fileBytes, index + 7);
     }
 
     private static void WriteRipInstruction(

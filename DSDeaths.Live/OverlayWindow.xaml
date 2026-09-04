@@ -1,0 +1,26 @@
+<Window x:Class="DSDeaths.Live.OverlayWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="DSDeaths Live Overlay"
+        Width="430" Height="180"
+        WindowStyle="None" AllowsTransparency="True" Background="Transparent"
+        ResizeMode="NoResize" ShowInTaskbar="False" Topmost="True"
+        WindowStartupLocation="CenterScreen">
+    <Window.ContextMenu>
+        <ContextMenu>
+            <MenuItem x:Name="HideOverlayMenuItem" Click="HideOverlayMenuItem_Click" />
+        </ContextMenu>
+    </Window.ContextMenu>
+    <Viewbox Stretch="Uniform" StretchDirection="Both">
+        <Border x:Name="OverlayBackgroundBorder" Width="430" Height="180" Background="#B30A0D12"
+                BorderBrush="#80D5A847" BorderThickness="1" CornerRadius="10" Padding="22">
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center">
+                    <TextBlock x:Name="OverlayDeathsLabel" Foreground="#D5A847" FontFamily="Segoe UI"
+                               FontSize="13" FontWeight="Bold" HorizontalAlignment="Center" TextAlignment="Center" />
+                    <TextBlock x:Name="OverlayCountText" Text="0" Foreground="White" FontFamily="Segoe UI"
+                               FontSize="58" FontWeight="Light" LineHeight="66"
+                               HorizontalAlignment="Center" TextAlignment="Center" />
+                </StackPanel>
+        </Border>
+    </Viewbox>
+</Window>

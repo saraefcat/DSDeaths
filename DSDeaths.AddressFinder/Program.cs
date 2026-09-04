@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace DSDeaths.AddressFinder;
@@ -45,6 +46,11 @@ internal static class Program
         }
 
         PrintHeader();
+
+        if (options.ExecutableCheckPath is not null)
+        {
+            return RunExecutableCompatibilityCheck(options.ExecutableCheckPath);
+        }
 
         if (!ConfirmOfflineMode(options.OfflineConfirmed))
         {
@@ -135,6 +141,121 @@ internal static class Program
             Console.Error.WriteLine(exception.Message);
             return 2;
         }
+    }
+
+    private static int RunExecutableCompatibilityCheck(string inputPath)
+    {
+        string fullPath;
+        string[] executablePaths;
+        try
+        {
+            fullPath = Path.GetFullPath(inputPath);
+            if (File.Exists(fullPath))
+            {
+                executablePaths = new[] { fullPath };
+            }
+            else if (Directory.Exists(fullPath))
+            {
+                executablePaths = Directory.GetFiles(
+                    fullPath,
+                    "eldenring.exe",
+                    SearchOption.AllDirectories);
+                Array.Sort(executablePaths, StringComparer.OrdinalIgnoreCase);
+            }
+            else
+            {
+                Console.Error.WriteLine($"Path not found: {fullPath}");
+                return 2;
+            }
+        }
+        catch (IOException exception)
+        {
+            Console.Error.WriteLine($"Could not enumerate executable files: {exception.Message}");
+            return 2;
+        }
+        catch (UnauthorizedAccessException exception)
+        {
+            Console.Error.WriteLine($"Could not enumerate executable files: {exception.Message}");
+            return 2;
+        }
+        catch (ArgumentException exception)
+        {
+            Console.Error.WriteLine($"The supplied path is invalid: {exception.Message}");
+            return 2;
+        }
+        catch (NotSupportedException exception)
+        {
+            Console.Error.WriteLine($"The supplied path is invalid: {exception.Message}");
+            return 2;
+        }
+
+        if (executablePaths.Length == 0)
+        {
+            Console.Error.WriteLine("No eldenring.exe files were found under the supplied folder.");
+            return 2;
+        }
+
+        Console.WriteLine("Offline executable compatibility check");
+        Console.WriteLine("======================================");
+        Console.WriteLine("This reads executable files only. It does not start or modify the game.");
+        Console.WriteLine();
+
+        bool allCompatible = true;
+        foreach (string executablePath in executablePaths)
+        {
+            Console.WriteLine(executablePath);
+            try
+            {
+                byte[] bytes = File.ReadAllBytes(executablePath);
+                ExecutableSignatureScanResult result =
+                    EldenRingExecutableSignatureScanner.Scan(bytes);
+                string sha256 = Convert.ToHexString(SHA256.HashData(bytes));
+                Console.WriteLine($"  SHA-256          : {sha256}");
+                Console.WriteLine($"  Machine          : 0x{result.Machine:X4}");
+                Console.WriteLine($"  Image size       : 0x{result.ImageSize:X}");
+                Console.WriteLine($"  Signature matches: {result.Matches.Count}");
+
+                if (result.IsCompatible)
+                {
+                    ExecutableSignatureMatch match = result.Matches[0];
+                    Console.WriteLine($"  Getter RVA       : 0x{match.InstructionRva:X}");
+                    Console.WriteLine($"  Pointer RVA      : 0x{match.PointerStorageRva:X}");
+                    Console.WriteLine("  RESULT           : PASS");
+                }
+                else
+                {
+                    allCompatible = false;
+                    Console.WriteLine("  RESULT           : FAIL (exactly one valid x64 match is required)");
+                }
+            }
+            catch (IOException exception)
+            {
+                allCompatible = false;
+                Console.WriteLine($"  RESULT           : ERROR ({exception.Message})");
+            }
+            catch (UnauthorizedAccessException exception)
+            {
+                allCompatible = false;
+                Console.WriteLine($"  RESULT           : ERROR ({exception.Message})");
+            }
+            catch (InvalidDataException exception)
+            {
+                allCompatible = false;
+                Console.WriteLine($"  RESULT           : ERROR ({exception.Message})");
+            }
+            catch (OverflowException exception)
+            {
+                allCompatible = false;
+                Console.WriteLine($"  RESULT           : ERROR ({exception.Message})");
+            }
+            Console.WriteLine();
+        }
+
+        Console.WriteLine(allCompatible
+            ? $"PASS: {executablePaths.Length} executable(s) matched uniquely."
+            : "FAIL: One or more executables did not match uniquely.");
+        Console.WriteLine("A PASS is an offline compatibility indication; confirm the counter in-game before release.");
+        return allCompatible ? 0 : 1;
     }
 
     private static int RunDiscovery(
@@ -892,6 +1013,9 @@ internal static class Program
         Console.WriteLine("Signature research:");
         Console.WriteLine("  DSDeaths.AddressFinder.exe --offline --analyze-rva 0x12345678 --offset 0x94 --expected 124");
         Console.WriteLine();
+        Console.WriteLine("Offline executable compatibility check (does not start the game):");
+        Console.WriteLine("  DSDeaths.AddressFinder.exe --check-exe <eldenring.exe-or-backup-folder>");
+        Console.WriteLine();
         Console.WriteLine("Options:");
         Console.WriteLine("  --offline              Assert that EAC is disabled and the game is offline.");
         Console.WriteLine("  --known <decimal>      Initial known cumulative death count.");
@@ -900,6 +1024,7 @@ internal static class Program
         Console.WriteLine($"  --offset <value>       Field offset; defaults to legacy 0x{LegacyFieldOffset:X}.");
         Console.WriteLine("  --expected <decimal>   Expected count in validation or research mode.");
         Console.WriteLine("  --report <path>        Signature research report path.");
+        Console.WriteLine("  --check-exe <path>     Check one executable or every eldenring.exe below a folder.");
         Console.WriteLine("  --pid <decimal>        Select a specific eldenring.exe PID.");
         Console.WriteLine("  --help                 Show this help.");
         Console.WriteLine();
@@ -981,6 +1106,7 @@ internal static class Program
         internal int? ExpectedDeathCount { get; private set; }
         internal int? ProcessId { get; private set; }
         internal string? ReportPath { get; private set; }
+        internal string? ExecutableCheckPath { get; private set; }
 
         internal static Options Parse(string[] args)
         {
@@ -1044,6 +1170,14 @@ internal static class Program
                         }
                         break;
 
+                    case "--check-exe":
+                        options.ExecutableCheckPath = ReadValue(args, ref index, argument);
+                        if (string.IsNullOrWhiteSpace(options.ExecutableCheckPath))
+                        {
+                            throw new ArgumentException("--check-exe requires a non-empty path.");
+                        }
+                        break;
+
                     default:
                         throw new ArgumentException($"Unknown option: {argument}");
                 }
@@ -1057,6 +1191,18 @@ internal static class Program
             if (options.ReportPath is not null && !options.AnalysisRva.HasValue)
             {
                 throw new ArgumentException("--report can only be used with --analyze-rva.");
+            }
+
+            if (options.ExecutableCheckPath is not null &&
+                (options.OfflineConfirmed ||
+                 options.KnownDeathCount.HasValue ||
+                 options.ValidationRva.HasValue ||
+                 options.AnalysisRva.HasValue ||
+                 options.ExpectedDeathCount.HasValue ||
+                 options.ProcessId.HasValue ||
+                 options.ReportPath is not null))
+            {
+                throw new ArgumentException("--check-exe cannot be combined with live-process options.");
             }
 
             return options;

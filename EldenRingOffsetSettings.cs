@@ -4,16 +4,37 @@ using System.Globalization;
 using System.IO;
 
 namespace DSDeaths {
-    sealed class EldenRingOffsetSettings {
-        internal const string FileName = "DSDeaths.settings.ini";
+    public enum OffsetSettingsWarningCode {
+        MalformedLine,
+        InvalidValue,
+        ReadFailed
+    }
+
+    public sealed class OffsetSettingsWarning {
+        internal OffsetSettingsWarning(
+            OffsetSettingsWarningCode code,
+            string argument0,
+            string argument1) {
+            Code = code;
+            Argument0 = argument0;
+            Argument1 = argument1;
+        }
+
+        public OffsetSettingsWarningCode Code { get; private set; }
+        public string Argument0 { get; private set; }
+        public string Argument1 { get; private set; }
+    }
+
+    public sealed class EldenRingOffsetSettings {
+        public const string FileName = "DSDeaths.settings.ini";
 
         const string EnabledKey = "EldenRingOffsetEnabled";
         const string OffsetKey = "EldenRingDeathOffset";
 
-        internal bool Enabled { get; set; }
-        internal int Offset { get; set; }
+        public bool Enabled { get; set; }
+        public int Offset { get; set; }
 
-        internal int Apply(int rawDeathCount) {
+        public int Apply(int rawDeathCount) {
             if (!Enabled) {
                 return rawDeathCount;
             }
@@ -22,12 +43,22 @@ namespace DSDeaths {
             return adjusted < 0 ? 0 : (int)adjusted;
         }
 
-        internal static EldenRingOffsetSettings Load(string path, out string warning) {
+        public static EldenRingOffsetSettings Load(string path, out string warning) {
+            OffsetSettingsWarning[] ignored;
+            return Load(path, out warning, out ignored);
+        }
+
+        public static EldenRingOffsetSettings Load(
+            string path,
+            out string warning,
+            out OffsetSettingsWarning[] warningDetails) {
             var settings = new EldenRingOffsetSettings();
             var warnings = new List<string>();
+            var details = new List<OffsetSettingsWarning>();
 
             if (!File.Exists(path)) {
                 warning = null;
+                warningDetails = details.ToArray();
                 return settings;
             }
 
@@ -41,7 +72,13 @@ namespace DSDeaths {
 
                     int separator = line.IndexOf('=');
                     if (separator <= 0) {
-                        warnings.Add("Ignored malformed settings line: " + rawLine);
+                        AddWarning(
+                            warnings,
+                            details,
+                            "Ignored malformed settings line: " + rawLine,
+                            OffsetSettingsWarningCode.MalformedLine,
+                            rawLine,
+                            null);
                         continue;
                     }
 
@@ -53,28 +90,41 @@ namespace DSDeaths {
                         if (TryParseBoolean(value, out enabled)) {
                             settings.Enabled = enabled;
                         } else {
-                            warnings.Add("Ignored invalid " + EnabledKey + " value: " + value);
+                            AddInvalidValueWarning(warnings, details, EnabledKey, value);
                         }
                     } else if (key.Equals(OffsetKey, StringComparison.OrdinalIgnoreCase)) {
                         int offset;
                         if (int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out offset) && offset >= 0) {
                             settings.Offset = offset;
                         } else {
-                            warnings.Add("Ignored invalid " + OffsetKey + " value: " + value);
+                            AddInvalidValueWarning(warnings, details, OffsetKey, value);
                         }
                     }
                 }
             } catch (IOException exception) {
-                warnings.Add("Could not read " + FileName + ": " + exception.Message);
+                AddWarning(
+                    warnings,
+                    details,
+                    "Could not read " + FileName + ": " + exception.Message,
+                    OffsetSettingsWarningCode.ReadFailed,
+                    FileName,
+                    exception.Message);
             } catch (UnauthorizedAccessException exception) {
-                warnings.Add("Could not read " + FileName + ": " + exception.Message);
+                AddWarning(
+                    warnings,
+                    details,
+                    "Could not read " + FileName + ": " + exception.Message,
+                    OffsetSettingsWarningCode.ReadFailed,
+                    FileName,
+                    exception.Message);
             }
 
             warning = warnings.Count == 0 ? null : string.Join(Environment.NewLine, warnings.ToArray());
+            warningDetails = details.ToArray();
             return settings;
         }
 
-        internal bool TrySave(string path, out string error) {
+        public bool TrySave(string path, out string error) {
             string temporaryPath = path + ".tmp";
             string[] lines =
             {
@@ -142,6 +192,31 @@ namespace DSDeaths {
             } catch (IOException) {
             } catch (UnauthorizedAccessException) {
             }
+        }
+
+        static void AddInvalidValueWarning(
+            List<string> warnings,
+            List<OffsetSettingsWarning> details,
+            string key,
+            string value) {
+            AddWarning(
+                warnings,
+                details,
+                "Ignored invalid " + key + " value: " + value,
+                OffsetSettingsWarningCode.InvalidValue,
+                key,
+                value);
+        }
+
+        static void AddWarning(
+            List<string> warnings,
+            List<OffsetSettingsWarning> details,
+            string message,
+            OffsetSettingsWarningCode code,
+            string argument0,
+            string argument1) {
+            warnings.Add(message);
+            details.Add(new OffsetSettingsWarning(code, argument0, argument1));
         }
     }
 }

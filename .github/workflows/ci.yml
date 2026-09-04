@@ -1,0 +1,38 @@
+name: build-and-test
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v6
+
+      - name: Install .NET SDK
+        uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.204
+
+      - name: Restore
+        run: dotnet restore DSDeaths.sln -p:Platform=x64
+
+      - name: Build
+        run: dotnet build DSDeaths.sln -c Release -p:Platform=x64 --no-restore
+
+      - name: Signature tests
+        run: dotnet run --project DSDeaths.SignatureTests/DSDeaths.SignatureTests.csproj -c Release --no-build
+
+      - name: Offset tests
+        run: dotnet run --project DSDeaths.OffsetTests/DSDeaths.OffsetTests.csproj -c Release --no-build
+
+      - name: Address Finder tests
+        run: dotnet run --project DSDeaths.AddressFinder.Tests/DSDeaths.AddressFinder.Tests.csproj -c Release --no-build
+
+      - name: DSDeaths Live tests
+        run: dotnet run --project DSDeaths.Live.Tests/DSDeaths.Live.Tests.csproj -c Release --no-build

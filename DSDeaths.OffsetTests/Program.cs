@@ -44,10 +44,15 @@ namespace DSDeaths {
             AssertTrue("initial settings save", settings.TrySave(path, out error), error);
 
             string warning;
-            EldenRingOffsetSettings loaded = EldenRingOffsetSettings.Load(path, out warning);
+            OffsetSettingsWarning[] warningDetails;
+            EldenRingOffsetSettings loaded = EldenRingOffsetSettings.Load(
+                path,
+                out warning,
+                out warningDetails);
             AssertEqual("saved enabled state is restored", true, loaded.Enabled);
             AssertEqual("saved baseline is restored", 33506, loaded.Offset);
             AssertEqual("valid settings have no warning", null, warning);
+            AssertEqual("valid settings have no structured warnings", 0, warningDetails.Length);
 
             loaded.Enabled = false;
             loaded.Offset = 40000;
@@ -68,10 +73,23 @@ namespace DSDeaths {
             });
 
             string warning;
-            EldenRingOffsetSettings loaded = EldenRingOffsetSettings.Load(path, out warning);
+            OffsetSettingsWarning[] warningDetails;
+            EldenRingOffsetSettings loaded = EldenRingOffsetSettings.Load(
+                path,
+                out warning,
+                out warningDetails);
             AssertEqual("on is accepted for enabled state", true, loaded.Enabled);
             AssertEqual("negative baseline is ignored", 0, loaded.Offset);
             AssertTrue("invalid settings produce a warning", !string.IsNullOrEmpty(warning), warning);
+            AssertEqual("invalid settings produce structured warnings", 2, warningDetails.Length);
+            AssertEqual(
+                "invalid baseline warning is structured",
+                OffsetSettingsWarningCode.InvalidValue,
+                warningDetails[0].Code);
+            AssertEqual(
+                "malformed line warning is structured",
+                OffsetSettingsWarningCode.MalformedLine,
+                warningDetails[1].Code);
         }
 
         static void AssertTrue(string name, bool actual, string details) {

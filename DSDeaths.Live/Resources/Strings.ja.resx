@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <resheader name="resmimetype"><value>text/microsoft-resx</value></resheader>
+  <resheader name="version"><value>2.0</value></resheader>
+  <resheader name="reader"><value>System.Resources.ResXResourceReader, System.Windows.Forms</value></resheader>
+  <resheader name="writer"><value>System.Resources.ResXResourceWriter, System.Windows.Forms</value></resheader>
+  <data name="AppTitle" xml:space="preserve"><value>DSDeaths Live</value></data>
+  <data name="Subtitle" xml:space="preserve"><value>配信用デスカウンター</value></data>
+  <data name="NoGame" xml:space="preserve"><value>対応ゲームは見つかっていません</value></data>
+  <data name="Searching" xml:space="preserve"><value>対応ゲームの起動を待っています...</value></data>
+  <data name="Connecting" xml:space="preserve"><value>{0} に接続しています...</value></data>
+  <data name="Monitoring" xml:space="preserve"><value>{0} を監視中（{1}ビット）</value></data>
+  <data name="Unsupported" xml:space="preserve"><value>このゲーム版は安全に監視できません。</value></data>
+  <data name="MonitorError" xml:space="preserve"><value>監視エラー</value></data>
+  <data name="Stopped" xml:space="preserve"><value>監視を停止しました</value></data>
+  <data name="DeathsLabel" xml:space="preserve"><value>DEATHS</value></data>
+  <data name="RawFormat" xml:space="preserve"><value>累計値: {0}</value></data>
+  <data name="RawUnavailable" xml:space="preserve"><value>累計値: —</value></data>
+  <data name="EacWarningTitle" xml:space="preserve"><value>ELDEN RING の安全上の注意</value></data>
+  <data name="EacWarningText" xml:space="preserve"><value>Easy Anti-Cheatを無効にし、オフラインでのみ使用してください。</value></data>
+  <data name="OfflineLaunchText" xml:space="preserve"><value>起動用テキストを準備して直接起動します。EAC無効状態は検証できないため、必ずオフラインで使用してください。</value></data>
+  <data name="OfflineLaunchButton" xml:space="preserve"><value>Elden Ringをオフライン起動</value></data>
+  <data name="OfflineLaunchChoose" xml:space="preserve"><value>起動先...</value></data>
+  <data name="OfflineLaunchChooseHint" xml:space="preserve"><value>eldenring.exeの場所を選択または変更します。</value></data>
+  <data name="OfflineLaunchPathUnset" xml:space="preserve"><value>初回起動時にeldenring.exeを選択します。</value></data>
+  <data name="OfflineLaunchPathNotSet" xml:space="preserve"><value>起動先: 未設定</value></data>
+  <data name="OfflineLaunchPath" xml:space="preserve"><value>起動先: {0}</value></data>
+  <data name="OfflineLaunchDialogTitle" xml:space="preserve"><value>Elden Ringの実行ファイルを選択</value></data>
+  <data name="OfflineLaunchDialogFilter" xml:space="preserve"><value>Elden Ring実行ファイル (eldenring.exe)|eldenring.exe|実行ファイル (*.exe)|*.exe</value></data>
+  <data name="OfflineLaunchConfirmTitle" xml:space="preserve"><value>Elden Ringをオフライン起動</value></data>
+  <data name="OfflineLaunchConfirm" xml:space="preserve"><value>次のオフライン起動準備を行います。&#xA;&#xA;起動用テキスト:&#xA;{0}&#xA;内容: {1}&#xA;&#xA;実行ファイル:&#xA;{2}&#xA;&#xA;既存の起動用テキストの内容が異なる場合は上書きしません。DSDeathsはEAC無効状態を検証できないため、必ずオフラインで使用してください。&#xA;&#xA;続行しますか？</value></data>
+  <data name="OfflineLaunchWrongExecutable" xml:space="preserve"><value>Elden Ringのゲームフォルダーにあるeldenring.exeを選択してください。</value></data>
+  <data name="OfflineLaunchExecutableMissing" xml:space="preserve"><value>eldenring.exeが見つかりません: {0}</value></data>
+  <data name="OfflineLaunchInvalidPath" xml:space="preserve"><value>起動先が正しくありません: {0}</value></data>
+  <data name="OfflineLaunchAppIdConflict" xml:space="preserve"><value>{0}には別の内容が保存されています。安全のため上書きせず、起動を中止しました。</value></data>
+  <data name="OfflineLaunchFileReadFailed" xml:space="preserve"><value>起動用テキストを読み取れませんでした: {0}</value></data>
+  <data name="OfflineLaunchFileWriteFailed" xml:space="preserve"><value>起動用テキストを作成できませんでした: {0}</value></data>
+  <data name="OfflineLaunchProcessCheckFailed" xml:space="preserve"><value>Elden Ringが起動中か確認できなかったため、起動を中止しました: {0}</value></data>
+  <data name="OfflineLaunchAlreadyRunning" xml:space="preserve"><value>Elden Ringはすでに起動しています。ゲームを終了してからオフライン起動を使用してください。</value></data>
+  <data name="OfflineLaunchStartFailed" xml:space="preserve"><value>Elden Ringを起動できませんでした: {0}</value></data>
+  <data name="OfflineLaunchStarted" xml:space="preserve"><value>Elden Ringのオフライン起動を開始しました。</value></data>
+  <data name="OfflineLaunchPathSaved" xml:space="preserve"><value>Elden Ringの起動先を保存しました。</value></data>
+  <data name="OffsetTitle" xml:space="preserve"><value>周回オフセット</value></data>
+  <data name="OffsetOnly" xml:space="preserve"><value>Elden Ring専用</value></data>
+  <data name="OffsetEnable" xml:space="preserve"><value>ゼロ基準を有効にする</value></data>
+  <data name="BaselineLabel" xml:space="preserve"><value>ゼロ基準値</value></data>
+  <data name="SetCurrentZero" xml:space="preserve"><value>現在値を0に設定</value></data>
+  <data name="Apply" xml:space="preserve"><value>適用</value></data>
+  <data name="OffsetHelp" xml:space="preserve"><value>Elden Ringの累計値から保存した基準値を差し引きます。ゲームやセーブデータは一切変更しません。</value></data>
+  <data name="ObsTitle" xml:space="preserve"><value>OBSテキスト出力</value></data>
+  <data name="ObsReady" xml:space="preserve"><value>DSDeaths.txt に出力中</value></data>
+  <data name="ObsError" xml:space="preserve"><value>DSDeaths.txt に書き込めません</value></data>
+  <data name="OutputPathLabel" xml:space="preserve"><value>ファイル: {0}</value></data>
+  <data name="SettingsTitle" xml:space="preserve"><value>表示設定</value></data>
+  <data name="ApplicationSettingsTitle" xml:space="preserve"><value>アプリ設定</value></data>
+  <data name="LanguageLabel" xml:space="preserve"><value>言語</value></data>
+  <data name="LanguageAuto" xml:space="preserve"><value>Windowsの設定</value></data>
+  <data name="LanguageJapanese" xml:space="preserve"><value>日本語</value></data>
+  <data name="LanguageEnglish" xml:space="preserve"><value>English</value></data>
+  <data name="CloseButtonBehavior" xml:space="preserve"><value>閉じるボタンの動作</value></data>
+  <data name="CloseToTray" xml:space="preserve"><value>通知領域に収納</value></data>
+  <data name="CloseImmediately" xml:space="preserve"><value>アプリを終了</value></data>
+  <data name="OverlayAppearanceTitle" xml:space="preserve"><value>オーバーレイの外観</value></data>
+  <data name="OverlayScale" xml:space="preserve"><value>全体倍率</value></data>
+  <data name="OverlayScaleValueFormat" xml:space="preserve"><value>{0}%</value></data>
+  <data name="BackgroundOpacity" xml:space="preserve"><value>背景の不透明度</value></data>
+  <data name="OpacityValueFormat" xml:space="preserve"><value>{0}%</value></data>
+  <data name="TextColor" xml:space="preserve"><value>カウント文字色</value></data>
+  <data name="FontFamily" xml:space="preserve"><value>カウントフォント</value></data>
+  <data name="FontSize" xml:space="preserve"><value>文字サイズ</value></data>
+  <data name="FontSizeValueFormat" xml:space="preserve"><value>{0}</value></data>
+  <data name="TextShadow" xml:space="preserve"><value>文字の影</value></data>
+  <data name="TextShadowNone" xml:space="preserve"><value>なし</value></data>
+  <data name="TextShadowSoft" xml:space="preserve"><value>弱い</value></data>
+  <data name="TextShadowStrong" xml:space="preserve"><value>強い</value></data>
+  <data name="ShowOverlay" xml:space="preserve"><value>OBSオーバーレイを表示</value></data>
+  <data name="HideOverlay" xml:space="preserve"><value>OBSオーバーレイを隠す</value></data>
+  <data name="OverlayHint" xml:space="preserve"><value>ドラッグで移動・右クリックで非表示</value></data>
+  <data name="StatusReady" xml:space="preserve"><value>準備完了</value></data>
+  <data name="AlreadyRunningTitle" xml:space="preserve"><value>DSDeathsは起動済みです</value></data>
+  <data name="AlreadyRunningMessage" xml:space="preserve"><value>別のカウンターを起動する前に、DSDeathsまたはDSDeaths Liveを終了してください。</value></data>
+  <data name="ErrorTitle" xml:space="preserve"><value>DSDeaths Live</value></data>
+  <data name="InvalidBaseline" xml:space="preserve"><value>ゼロ基準値には0以上の整数を入力してください。</value></data>
+  <data name="CurrentZeroSuccess" xml:space="preserve"><value>現在の累計値をゼロ基準に設定しました。</value></data>
+  <data name="BaselineSaved" xml:space="preserve"><value>ゼロ基準値を保存し、オフセットを有効にしました。</value></data>
+  <data name="SettingsSaveError" xml:space="preserve"><value>GUI設定を保存できませんでした: {0}</value></data>
+  <data name="TrayShow" xml:space="preserve"><value>DSDeaths Liveを表示</value></data>
+  <data name="TrayExit" xml:space="preserve"><value>終了</value></data>
+  <data name="ClampedWarning" xml:space="preserve"><value>累計値が保存済みの基準値より小さいため、表示値を0にしています。</value></data>
+  <data name="MonitorDetailUnexpectedFailure" xml:space="preserve"><value>監視が予期せず停止しました: {0}</value></data>
+  <data name="MonitorDetailOpenProcessFailed" xml:space="preserve"><value>ゲームプロセスを読み取り専用で開けませんでした: {0}</value></data>
+  <data name="MonitorDetailInspectModuleFailed" xml:space="preserve"><value>ゲームモジュールを確認できませんでした: {0}</value></data>
+  <data name="MonitorDetailArchitectureFailed" xml:space="preserve"><value>ゲームプロセスのアーキテクチャを判定できませんでした: {0}</value></data>
+  <data name="MonitorDetailEldenRingRequires64Bit" xml:space="preserve"><value>Elden Ringは64ビットプロセスである必要があります。</value></data>
+  <data name="MonitorDetailSignatureResolved" xml:space="preserve"><value>シグネチャを一意に解決しました（getter RVA 0x{0}、pointer RVA 0x{1}）。</value></data>
+  <data name="MonitorDetailSignatureResolutionFailed" xml:space="preserve"><value>Elden Ringのデスカウンターを安全に解決できませんでした。このゲームバージョンには対応していません。</value></data>
+  <data name="MonitorDetailUnsupportedVariant" xml:space="preserve"><value>このプロセス形式は安全に監視できません。</value></data>
+  <data name="MonitorDetailNullPointer" xml:space="preserve"><value>デスカウンターのポインターチェーンにnullポインターが含まれています。</value></data>
+  <data name="MonitorDetailReadMemoryFailed" xml:space="preserve"><value>ゲームメモリを読み取れませんでした: {0}</value></data>
+  <data name="OverlayPositionLocked" xml:space="preserve"><value>位置を固定</value></data>
+  <data name="OverlayTopmost" xml:space="preserve"><value>常に最前面</value></data>
+  <data name="OverlayShowBorder" xml:space="preserve"><value>枠を表示</value></data>
+  <data name="OverlayShowLabel" xml:space="preserve"><value>DEATHSラベルを表示</value></data>
+  <data name="ResetOverlayPosition" xml:space="preserve"><value>オーバーレイ位置をリセット</value></data>
+  <data name="OpenOutputFolder" xml:space="preserve"><value>フォルダーを開く</value></data>
+  <data name="CopyOutputPath" xml:space="preserve"><value>パスをコピー</value></data>
+  <data name="CopyStatus" xml:space="preserve"><value>詳細をコピー</value></data>
+  <data name="OutputPathCopied" xml:space="preserve"><value>OBS出力先のパスをコピーしました。</value></data>
+  <data name="StatusCopied" xml:space="preserve"><value>診断情報をコピーしました。</value></data>
+  <data name="OpenOutputFolderError" xml:space="preserve"><value>OBS出力フォルダーを開けませんでした: {0}</value></data>
+  <data name="ClipboardError" xml:space="preserve"><value>クリップボードへコピーできませんでした: {0}</value></data>
+  <data name="DiagnosticSummary" xml:space="preserve"><value>DSDeaths Live バージョン: {0}&#xA;ゲーム: {1}&#xA;状態: {2}&#xA;状態表示: {3}&#xA;OBS出力: {4}&#xA;診断ログ: {5}</value></data>
+  <data name="UnhandledError" xml:space="preserve"><value>DSDeaths Liveで予期しないエラーが発生したため、終了する可能性があります。詳細を次のファイルへ記録しました:&#xA;{0}</value></data>
+  <data name="OperationEldenRingNotConnected" xml:space="preserve"><value>Elden Ringに接続していません。</value></data>
+  <data name="OperationValidEldenRingCountRequired" xml:space="preserve"><value>ゼロ基準を設定するには、有効なElden Ringの累計値が必要です。</value></data>
+  <data name="OperationInvalidZeroBaseline" xml:space="preserve"><value>ゼロ基準値には0以上の整数を指定してください。</value></data>
+  <data name="OperationSettingsSaveFailed" xml:space="preserve"><value>ゼロ基準の設定を保存できませんでした: {0}</value></data>
+  <data name="SettingsWarningMalformedLine" xml:space="preserve"><value>形式が正しくないGUI設定行を無視しました: {0}</value></data>
+  <data name="SettingsWarningInvalidValue" xml:space="preserve"><value>正しくないGUI設定値を無視しました（{0}）: {1}</value></data>
+  <data name="SettingsWarningReadFailed" xml:space="preserve"><value>{0}を読み取れませんでした: {1}</value></data>
+  <data name="OffsetWarningMalformedLine" xml:space="preserve"><value>形式が正しくないゼロ基準設定行を無視しました: {0}</value></data>
+  <data name="OffsetWarningInvalidValue" xml:space="preserve"><value>正しくないゼロ基準設定値を無視しました（{0}）: {1}</value></data>
+</root>

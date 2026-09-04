@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net48</TargetFramework>
+    <PlatformTarget>x64</PlatformTarget>
+    <LangVersion>7.3</LangVersion>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net48" Version="1.0.3" PrivateAssets="all" />
+    <ProjectReference Include="..\DSDeaths.Core\DSDeaths.Core.csproj" />
+    <ProjectReference Include="..\DSDeaths.Live\DSDeaths.Live.csproj" />
+    <Reference Include="WindowsBase" />
+  </ItemGroup>
+</Project>

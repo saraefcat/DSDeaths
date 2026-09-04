@@ -4,11 +4,12 @@
 
 Community-maintained fork of [quidrex/DSDeaths](https://github.com/quidrex/DSDeaths).
 
-Version 1.2.0-rc1 adds:
+Version 1.2.0-rc2 adds:
 
+- the DSDeaths Live WPF interface with a configurable overlay and English/Japanese UI;
 - fail-closed Elden Ring signature resolution verified on App Ver. 1.16 and 1.17;
-- a persistent run offset;
-- read-only address-finding utilities for future game updates.
+- a persistent run offset and guarded offline-launch helper;
+- read-only maintenance scanners and automated Windows tests.
 
 ## Purpose
 

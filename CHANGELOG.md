@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [1.2.0-rc2] - 2026-09-04
+
 - Added an Elden Ring offline-launch helper to DSDeaths Live. It stores the
   selected `eldenring.exe`, safely creates or validates `steam_appid.txt`,
   displays the selected path, never overwrites conflicting content, prevents
